@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venkat Loganathan — Senior Director of Engineering · AI, Data &amp; Platforms</title>
+<style>
+  /* Venkat Loganathan · Warm White · modern-art accents */
+  :root{
+    --ink:#2A1A20;--ink2:#3D2530;--coral:#EE5A3A;--coral7:#D5472B;--rose:#15B8A6;--turq7:#0E8F86;--amber:#2DD4BF;
+    --soft:#FDECE4;--tsoft:#DCF7F3;--muted:#8A7079;--body:#574047;--line:#F1E2D9;--surface:#FFFCFA;--card:#fff;
+    --sans:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --r-md:10px;--r-lg:16px;--shadow:0 1px 3px rgba(42,26,32,.07),0 10px 30px rgba(42,26,32,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--surface);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--coral);text-decoration:none}
+  a:hover{color:var(--coral7)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--coral)}
+  h1,h2,h3{letter-spacing:-.02em;font-weight:800;line-height:1.08;margin:0;color:var(--ink)}
+
+  header.top{position:sticky;top:0;z-index:50;background:rgba(255,252,250,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px 24px;flex-wrap:wrap}
+  .brandlock{display:flex;align-items:center;gap:10px}
+  .mono{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--coral),var(--rose));color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .brandlock .who{font-weight:800;font-size:14.5px}
+  .brandlock .who small{display:block;font-weight:600;color:var(--muted);font-size:11px}
+  .links{display:flex;gap:18px;margin-left:auto;flex-wrap:wrap;align-items:center}
+  .links a{color:var(--body);font-weight:600;font-size:13.5px}
+  .links a:hover{color:var(--coral)}
+  .links a.cta{color:#fff;background:var(--coral);padding:7px 15px;border-radius:8px}
+  .links a.cta:hover{background:var(--coral7);color:#fff}
+
+  /* hero — light, warm, modern-art */
+  .hero{position:relative;overflow:hidden;padding:74px 0 84px;background:var(--surface)}
+  .blob{position:absolute;z-index:0;filter:blur(10px);pointer-events:none}
+  .blob1{width:420px;height:420px;right:-110px;top:-120px;opacity:.42;background:radial-gradient(circle at 32% 30%,#FBC0A6,var(--coral));border-radius:47% 53% 62% 38%/54% 45% 55% 46%}
+  .blob2{width:340px;height:340px;left:-120px;bottom:-140px;opacity:.34;background:radial-gradient(circle at 40% 40%,#99F6E4,var(--rose));border-radius:60% 40% 46% 54%/45% 58% 42% 55%}
+  .ring{position:absolute;z-index:0;width:170px;height:170px;border:14px solid var(--amber);opacity:.28;border-radius:50%;right:36%;bottom:-70px;filter:blur(.3px)}
+  .hero .inner{position:relative;z-index:1;display:grid;grid-template-columns:1.25fr .85fr;gap:44px;align-items:center}
+  .hero h1{font-size:48px;margin:14px 0 16px;max-width:15ch}
+  .hero .lede{font-size:18px;color:var(--body);max-width:52ch;margin:0}
+  .cta-row{display:inline-flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+  .btn{display:inline-block;background:var(--coral);color:#fff;font-weight:700;padding:12px 22px;border-radius:var(--r-md);font-size:14px;border:none;cursor:pointer}
+  .btn:hover{background:var(--coral7);color:#fff}
+  .btn.ghost{background:transparent;color:var(--coral);border:1.5px solid var(--coral)}
+  .btn.ghost:hover{background:var(--soft);color:var(--coral7)}
+  .quickfacts{display:flex;gap:24px;flex-wrap:wrap;margin-top:32px}
+  .quickfacts div{border-left:3px solid var(--coral);padding-left:13px}
+  .quickfacts span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .quickfacts b{font-size:15px;color:var(--ink)}
+
+  /* portrait */
+  .portrait{position:relative;width:330px;max-width:82%;margin:0 0 0 auto}
+  .portrait img{width:100%;border-radius:24px;display:block;position:relative;z-index:2;box-shadow:0 24px 60px rgba(42,26,32,.20)}
+  .pfallback{display:none;width:100%;aspect-ratio:1/1;border-radius:24px;background:linear-gradient(135deg,var(--coral),var(--rose));color:#fff;font-weight:800;font-size:72px;align-items:center;justify-content:center;position:relative;z-index:2}
+  .pblock{position:absolute;inset:20px -20px -20px 20px;background:linear-gradient(135deg,var(--coral),var(--rose));border-radius:24px;z-index:1;transform:rotate(3deg);opacity:.9}
+  .pdots{position:absolute;left:-28px;bottom:22px;width:96px;height:64px;z-index:0;background-image:radial-gradient(var(--coral) 2px,transparent 2.4px);background-size:13px 13px;opacity:.55}
+
+  section{padding:60px 0}
+  section h2{font-size:28px;margin:6px 0 8px}
+  .sub{color:var(--muted);margin:0 0 30px;max-width:720px}
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card p{margin:0;color:var(--body);font-size:14.5px}
+  .chip{display:inline-block;background:var(--soft);color:var(--coral7);font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;margin:0 6px 8px 0}
+  .chip.t{background:var(--tsoft);color:var(--turq7)}
+
+  .about{display:grid;grid-template-columns:1.6fr 1fr;gap:30px;align-items:start}
+  .about .facts{background:linear-gradient(160deg,#FFFFFF,#FFF6F1);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow)}
+  .about .facts div{padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--body)}
+  .about .facts div:last-child{border-bottom:none}
+  .about .facts span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+
+  .stat-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+  .stat{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow)}
+  .stat b{display:block;font-size:29px;color:var(--coral);letter-spacing:-.02em}
+  .stat.alt b{color:var(--turq7)}
+  .stat span{font-size:13px;color:var(--body)}
+
+  .timeline{margin-top:6px}
+  .tl{position:relative;padding:0 0 24px 26px;border-left:2px solid var(--line)}
+  .tl:last-child{padding-bottom:0}
+  .tl::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--coral);border:2px solid #fff}
+  .tl .role{font-weight:800;font-size:16px;color:var(--ink)}
+  .tl .meta{color:var(--muted);font-size:13px;margin:1px 0 6px}
+  .tl p{margin:0;color:var(--body);font-size:14px}
+
+  .feature{background:linear-gradient(135deg,var(--coral) 0%,var(--rose) 100%);color:#fff;border-radius:20px;padding:36px;display:flex;gap:28px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden}
+  .feature::after{content:"";position:absolute;right:-40px;bottom:-60px;width:220px;height:220px;border:16px solid rgba(255,255,255,.16);border-radius:50%}
+  .feature .fc{position:relative;z-index:1;flex:1;min-width:260px}
+  .feature h3{color:#fff;font-size:24px;margin-bottom:8px}
+  .feature p{color:rgba(255,255,255,.9);font-size:15px;margin:0 0 8px}
+  .feature .btn{position:relative;z-index:1;background:#fff;color:var(--coral7)}
+  .feature .btn:hover{background:#FFF1EA;color:var(--coral7)}
+
+  footer{background:#FFF4EE;color:var(--body);padding:36px 0;margin-top:12px;border-top:1px solid var(--line)}
+  footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+  footer .who{color:var(--ink);font-weight:800}
+  footer a{color:var(--coral7)}
+  .contact-row{display:flex;gap:18px;flex-wrap:wrap}
+  @media(max-width:820px){
+    .g2,.g3{grid-template-columns:1fr}.about{grid-template-columns:1fr}
+    .hero .inner{grid-template-columns:1fr}.hero h1{font-size:34px}
+    .portrait{margin:6px auto 0;width:280px}.links{width:100%;margin-left:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="nav">
+    <div class="brandlock">
+      <div class="mono">VL</div>
+      <div class="who">Venkat Loganathan<small>Senior Director of Engineering</small></div>
+    </div>
+    <nav class="links">
+      <a href="#about">About</a>
+      <a href="#expertise">Expertise</a>
+      <a href="#experience">Experience</a>
+      <a href="#teaching">Teaching</a>
+      <a href="#contact">Contact</a>
+      <a class="cta" href="course/">Course</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="ring"></div>
+  <div class="wrap inner">
+    <div class="htext">
+      <span class="eyebrow">Engineering Leader · AI &amp; Decision Intelligence</span>
+      <h1>I build and scale AI-first platforms — and the teams behind them.</h1>
+      <p class="lede">Senior Director of Engineering at ConverSight, with close to two decades across engineering, product, and AI. I turn ambitious product ideas into reliable, intuitive platforms for global enterprises.</p>
+      <div class="cta-row">
+        <a class="btn" href="course/">View my Prompt Engineering course</a>
+        <a class="btn ghost" href="https://www.linkedin.com/in/venkat4/" target="_blank" rel="noopener">Connect on LinkedIn</a>
+      </div>
+      <div class="quickfacts">
+        <div><span>Currently</span><b>Sr. Director of Engineering · ConverSight</b></div>
+        <div><span>Focus</span><b>AI/ML, GenAI &amp; decision intelligence</b></div>
+        <div><span>Based in</span><b>Coimbatore, India</b></div>
+      </div>
+    </div>
+    <div class="portrait">
+      <span class="pdots"></span>
+      <span class="pblock"></span>
+      <img src="assets/venkat.jpg" alt="Venkat Loganathan" onerror="this.style.display='none';document.getElementById('pfb').style.display='flex'">
+      <div id="pfb" class="pfallback">VL</div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+<section id="about">
+  <span class="eyebrow">About</span>
+  <h2>Who I am</h2>
+  <div class="about">
+    <div>
+      <p style="color:var(--body);font-size:16px;margin:0 0 14px">I'm an engineering leader with close to two decades of experience spanning engineering, product, and AI-driven innovation. Today I'm Senior Director of Engineering at ConverSight, where I own the strategic vision, architecture, and execution of an AI-first decision intelligence platform that helps enterprises make faster, smarter decisions across supply chains and core business functions.</p>
+      <p style="color:var(--body);font-size:16px;margin:0">I build and scale high-performing teams, drive cloud-native modernization and DevOps maturity, and align engineering outcomes with business strategy. My work spans SaaS, fintech, and enterprise analytics, and is backed by a PhD in Computer Science &amp; Engineering.</p>
+      <div class="stat-row">
+        <div class="stat"><b>~20 yrs</b><span>across engineering, AI &amp; product</span></div>
+        <div class="stat alt"><b>Months&nbsp;→&nbsp;days</b><span>release cycles via CI/CD &amp; automation</span></div>
+        <div class="stat"><b>+30%</b><span>customer lifetime value (PLG)</span></div>
+      </div>
+    </div>
+    <div class="facts">
+      <div><span>Current role</span>Senior Director of Engineering, ConverSight</div>
+      <div><span>Focus areas</span>AI/ML &amp; GenAI · platform architecture · data analytics</div>
+      <div><span>Education</span>PhD, Computer Science &amp; Engineering · MS, Software Systems (BITS Pilani)</div>
+      <div><span>Find me</span><a href="https://www.linkedin.com/in/venkat4/" target="_blank" rel="noopener">LinkedIn</a> · <a href="https://github.com/anandvenkat4" target="_blank" rel="noopener">GitHub</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="expertise">
+  <span class="eyebrow">Expertise</span>
+  <h2>What I do</h2>
+  <p class="sub">I work at the intersection of AI, data platforms, and engineering leadership — from strategy down to architecture.</p>
+  <div class="grid g3">
+    <div class="card">
+      <h3>AI, ML &amp; GenAI</h3>
+      <p>From prototype to production: GenAI applications, prompt engineering, the ML lifecycle, and voice/NLP systems built for real enterprise use.</p>
+      <div style="margin-top:12px">
+        <span class="chip">GenAI &amp; LLMs</span><span class="chip">Prompt engineering</span><span class="chip">ML lifecycle</span><span class="chip">NLP / Voice AI</span><span class="chip">Scikit-Learn · NLTK</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Data &amp; Cloud Platforms</h3>
+      <p>Cloud-native architecture on AWS and Azure, unified data analytics on Databricks and Spark, and high-availability, disaster-ready systems.</p>
+      <div style="margin-top:12px">
+        <span class="chip t">AWS</span><span class="chip t">Azure</span><span class="chip t">Databricks · Spark</span><span class="chip t">Distributed systems</span><span class="chip t">HA / DR</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Engineering Leadership</h3>
+      <p>Building and scaling high-performing teams, DevOps and CI/CD maturity, product-led growth, and delivery that stays aligned to business strategy.</p>
+      <div style="margin-top:12px">
+        <span class="chip">Team building</span><span class="chip">DevOps &amp; CI/CD</span><span class="chip">Platform architecture</span><span class="chip">Product-led growth</span><span class="chip">Python</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <span class="eyebrow">Experience</span>
+  <h2>Where I've worked</h2>
+  <p class="sub">Nearly two decades leading engineering across enterprise analytics, fintech, and SaaS.</p>
+  <div class="timeline">
+    <div class="tl">
+      <div class="role">Senior Director of Engineering — ConverSight</div>
+      <div class="meta">Oct 2025 – Present · Coimbatore, India &nbsp;·&nbsp; earlier: Director of Engineering (2024–25), Director, Product-Led Growth (2023–25)</div>
+      <p>Own end-to-end technology strategy, architecture, and delivery for an AI-first decision intelligence platform. Drove cloud-native modernization and DevOps maturity — cutting release cycles from months to days — and, as PLG Director, lifted customer acquisition 25%, activation 20%, retention 15%, and lifetime value 30%.</p>
+    </div>
+    <div class="tl">
+      <div class="role">Principal Consultant, AI/ML Practice Lead — Hexaware Technologies</div>
+      <div class="meta">2021 – 2023 · Chennai, India</div>
+      <p>Technical architect for Unified Data Analytics and AI/ML. Built analytics on Databricks across AWS and Azure (Spark, Structured Streaming, ML lifecycle), improving operational efficiency 20%, and developed AI/ML service offerings contributing to 15% revenue growth.</p>
+    </div>
+    <div class="tl">
+      <div class="role">IT Team Lead, Python Backend — Xapo Holdings</div>
+      <div class="meta">2018 – 2021 · Gibraltar (Remote)</div>
+      <p>Backend lead for a Bitcoin wallet product. Scaled Flask/Python services, integrated multiple payment processors and real-time market workers, and re-architected core systems to secure REST-API standards.</p>
+    </div>
+    <div class="tl">
+      <div class="role">Lead Architect — ThickStat (now ConverSight AI)</div>
+      <div class="meta">Jun 2017 – May 2018 · Indianapolis, USA</div>
+      <p>Built a Voice AI product (Python, Scikit-Learn, NLTK) with text-mining for search-intent, engineered a full Docker CI/CD workflow, and established the founding 15-member engineering team.</p>
+    </div>
+  </div>
+</section>
+
+<section id="teaching">
+  <span class="eyebrow">Teaching</span>
+  <h2>Featured: Prompt Engineering</h2>
+  <p class="sub">A hands-on, skills-first course I designed and teach for postgraduate Data Science &amp; AI students.</p>
+  <div class="feature">
+    <div class="fc">
+      <h3>Prompt Engineering — a 15-hour workshop</h3>
+      <p>Two days, nine labs, a capstone. Students learn to design, optimise, and evaluate prompts across ChatGPT, Claude, and local open-source models — and come away able to prove their prompts work.</p>
+      <p style="color:rgba(255,255,255,.75);font-size:13px">The course page includes the syllabus, schedule, and downloadable reader, lab manual, and slides.</p>
+    </div>
+    <a class="btn" href="course/">Open the course &rarr;</a>
+  </div>
+</section>
+
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <div>
+      <div class="who">Venkat Loganathan</div>
+      <div style="font-size:13px;margin-top:4px;color:var(--muted)">Senior Director of Engineering · AI, Data &amp; Platforms</div>
+    </div>
+    <div class="contact-row">
+      <a href="https://www.linkedin.com/in/venkat4/" target="_blank" rel="noopener">linkedin.com/in/venkat4</a>
+      <a href="https://github.com/anandvenkat4" target="_blank" rel="noopener">github.com/anandvenkat4</a>
+      <a href="mailto:anandvenkat4@gmail.com">anandvenkat4@gmail.com</a>
+      <a href="tel:+919176662877">+91 91766 62877</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
