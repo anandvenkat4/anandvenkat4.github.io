@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Engineering — Venkat Loganathan</title>
+<style>
+  /* Venkat Loganathan brand · Indigo Slate · Clean System */
+  :root{
+    --ink:#2A1A20;--ink-soft:#3D2530;--indigo:#EE5A3A;--indigo7:#D5472B;--cyan:#15B8A6;
+    --soft:#FDECE4;--muted:#8A7079;--body:#5C4B53;--line:#F1E4DC;--surface:#FCF5F0;--card:#fff;
+    --ok:#047857;--warn:#B45309;
+    --sans:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --r-md:10px;--r-lg:14px;--shadow:0 1px 3px rgba(42,26,32,.09),0 8px 24px rgba(42,26,32,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--surface);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--indigo);text-decoration:none}
+  a:hover{color:var(--indigo7)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
+  h1,h2,h3{letter-spacing:-.02em;font-weight:800;line-height:1.1;margin:0}
+
+  /* nav */
+  header.top{position:sticky;top:0;z-index:50;background:rgba(248,250,252,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px 24px;flex-wrap:wrap}
+  .brandlock{display:flex;align-items:center;gap:10px}
+  .mono{width:34px;height:34px;border-radius:9px;background:var(--indigo);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;letter-spacing:.5px}
+  .brandlock .who{font-weight:800;font-size:14.5px;letter-spacing:-.01em}
+  .brandlock .who small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.02em}
+  .links{display:flex;gap:18px;margin-left:auto;flex-wrap:wrap}
+  .links a{color:var(--muted);font-weight:600;font-size:13.5px}
+  .links a:hover{color:var(--indigo)}
+
+  /* hero */
+  .hero{background:var(--ink);color:#fff;padding:64px 0 68px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-90px;top:-90px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(238,90,58,.42),transparent 70%);pointer-events:none}
+  .hero::before{content:"";position:absolute;left:-120px;bottom:-140px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(232,74,118,.20),transparent 70%);pointer-events:none}
+  .hero .wrap{position:relative;z-index:1}
+  .hero h1{font-size:46px;margin:16px 0 12px}
+  .hero .lede{font-size:18px;color:#EAD9CE;max-width:660px;margin:0}
+  .cta{display:inline-flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+  .btn{display:inline-block;background:var(--indigo);color:#fff;font-weight:700;padding:12px 22px;border-radius:var(--r-md);font-size:14px;border:none;cursor:pointer}
+  .btn:hover{background:var(--indigo7);color:#fff}
+  .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+  .btn.ghost:hover{border-color:#fff;color:#fff}
+  .meta{display:flex;gap:28px;flex-wrap:wrap;margin-top:32px}
+  .meta div{border-left:2px solid rgba(184,166,155,.45);padding-left:13px}
+  .meta span{display:block;font-size:11px;color:#B8A69B;text-transform:uppercase;letter-spacing:.08em}
+  .meta b{font-size:16px}
+
+  section{padding:54px 0}
+  section h2{font-size:27px;color:var(--ink);margin:6px 0 6px}
+  .sub{color:var(--muted);margin:0 0 28px;max-width:760px}
+
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card p{margin:0;color:var(--body);font-size:14.5px}
+  .chip{display:inline-block;background:var(--soft);color:var(--indigo);font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;margin:0 6px 8px 0;letter-spacing:.01em}
+  .chip.co{background:#DCF7F3;color:#0E8F86}
+
+  .modcard{position:relative;overflow:hidden}
+  .modcard .num{position:absolute;top:-16px;right:-4px;font-size:78px;font-weight:800;color:#FBEDE5;line-height:1;z-index:0;letter-spacing:-.04em}
+  .modcard .inner{position:relative;z-index:1}
+  .modcard ul{margin:10px 0 0;padding-left:18px;color:var(--body);font-size:14px}
+  .modcard ul li{margin-bottom:3px}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;font-size:14px}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#F6ECE4;color:var(--ink);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+  tr:last-child td{border-bottom:none}
+  .day-tag{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;font-weight:700;padding:9px 17px;border-radius:var(--r-md);margin:16px 0 12px;font-size:14px;letter-spacing:-.01em}
+  .day-tag .dt{color:var(--cyan)}
+  .lunch td{background:#fff7ed;color:var(--warn);font-weight:600;text-align:center}
+  .lab{color:var(--ok);font-weight:600}
+
+  .tool{display:inline-flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 15px;font-size:13.5px;font-weight:600}
+  .tool .dot{width:9px;height:9px;border-radius:50%}
+  .pill-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .callout{background:var(--soft);border:1px solid #F6C9B8;border-left:4px solid var(--indigo);border-radius:var(--r-md);padding:16px 18px;color:#B14A2C;font-size:14.5px}
+  .lp{font-family:var(--mono);font-size:12.5px;color:var(--indigo7);background:var(--soft);padding:1px 6px;border-radius:5px}
+
+  footer{background:var(--ink);color:#B8A69B;padding:40px 0;margin-top:24px}
+  footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  footer h4{color:#fff;margin:0 0 8px;font-size:14px}
+  footer .brandlock .who{color:#fff}
+  footer .brandlock .who small{color:#B8A69B}
+  footer a{color:#F4A98C}
+  .bloom{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.g2,.g3,.bloom{grid-template-columns:1fr}.hero h1{font-size:32px}.links{width:100%;margin-left:0}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="nav">
+    <div class="brandlock">
+      <div class="mono">VL</div>
+      <div class="who">Venkat Loganathan<small>Prompt Engineering</small></div>
+    </div>
+    <nav class="links">
+      <a href="../">← Home</a>
+      <a href="#overview">Overview</a>
+      <a href="#outcomes">Outcomes</a>
+      <a href="#modules">Modules</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#labs">Labs</a>
+      <a href="#assessment">Assessment</a>
+      <a href="#downloads">Downloads</a>
+      <a href="#resources">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">One-credit course · 15 hours · 2 days</span>
+    <h1>Prompt Engineering</h1>
+    <p class="lede">Design better prompts. A hands-on, skills-first course on crafting, optimizing, and evaluating prompts for large language models — for postgraduate students of Data Science &amp; AI.</p>
+    <div class="cta">
+      <a class="btn" href="#schedule">View 2-day schedule</a>
+      <a class="btn ghost" href="#labs">Jump to labs</a>
+    </div>
+    <div class="meta">
+      <div><span>Credits</span><b>1 · L-T-P 1-0-0</b></div>
+      <div><span>Duration</span><b>15 hours · 2 days</b></div>
+      <div><span>Format</span><b>60% hands-on</b></div>
+      <div><span>Prerequisite</span><b>Nil</b></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+<section id="overview">
+  <span class="eyebrow">Overview</span>
+  <h2>What this course does</h2>
+  <p class="sub">You'll learn to craft effective prompts for AI models and to evaluate how well they perform — by building. Roughly 60% of contact time is spent writing, testing, and measuring prompts across three platforms, so you leave with skills, not just notes.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Build, don't just read</h3><p>Eight guided labs and a capstone. Every technique is practiced on a real task before moving on.</p></div>
+    <div class="card"><h3>Grounded in research</h3><p>Content follows <i>The Prompt Report</i> taxonomy and best practice from OpenAI, Anthropic, and Vanderbilt's prompt-pattern work.</p></div>
+    <div class="card"><h3>Zero-cost tooling</h3><p>Labs run on free web tools and local open-source models (Ollama). No paid API keys required.</p></div>
+  </div>
+  <div class="pill-row">
+    <div class="tool"><span class="dot" style="background:#10a37f"></span>ChatGPT · free tier</div>
+    <div class="tool"><span class="dot" style="background:#d97757"></span>Claude · free tier</div>
+    <div class="tool"><span class="dot" style="background:#2A1A20"></span>Ollama · Llama / Mistral · local</div>
+  </div>
+</section>
+
+<section id="outcomes">
+  <span class="eyebrow">Outcomes</span>
+  <h2>What you'll be able to do</h2>
+  <p class="sub">On successful completion of the course, students will be able to:</p>
+  <div class="grid g2">
+    <div class="card">
+      <span class="chip co">CO1 · Apply</span>
+      <h3>Design &amp; optimize prompts</h3>
+      <p>Develop and implement effective prompting techniques to optimize AI model responses across various applications.</p>
+    </div>
+    <div class="card">
+      <span class="chip co">CO2 · Apply</span>
+      <h3>Assess &amp; evaluate strategies</h3>
+      <p>Assess and evaluate the security, alignment, and performance of prompting strategies through practical case studies and benchmarking methodologies.</p>
+    </div>
+  </div>
+</section>
+
+<section id="modules">
+  <span class="eyebrow">Curriculum</span>
+  <h2>Six modules</h2>
+  <p class="sub">The approved syllabus, delivered as skills-focused sessions. Each module pairs a short concept segment with a hands-on lab.</p>
+  <div class="grid g2">
+    <div class="card modcard"><div class="num">1</div><div class="inner">
+      <span class="chip">Day 1</span><span class="chip co">CO1</span>
+      <h3>Introduction to Prompts</h3>
+      <ul><li>Key terminology &amp; components</li><li>Historical context of prompting</li><li>How LLMs work: tokens, temperature, context window</li></ul>
+    </div></div>
+    <div class="card modcard"><div class="num">2</div><div class="inner">
+      <span class="chip">Day 1</span><span class="chip co">CO1</span>
+      <h3>Text-Based Techniques</h3>
+      <ul><li>In-context learning &amp; zero-shot</li><li>Few-shot prompting</li><li>Thought generation (Chain-of-Thought)</li></ul>
+    </div></div>
+    <div class="card modcard"><div class="num">4</div><div class="inner">
+      <span class="chip">Day 1</span><span class="chip co">CO1</span>
+      <h3>Answer Engineering</h3>
+      <ul><li>Shape, space &amp; extraction</li><li>Structured / JSON output</li><li>Parsing &amp; validation</li></ul>
+    </div></div>
+    <div class="card modcard"><div class="num">3</div><div class="inner">
+      <span class="chip">Day 2</span><span class="chip co">CO1</span>
+      <h3>Advanced Techniques</h3>
+      <ul><li>Decomposition (least-to-most)</li><li>Ensembling &amp; self-consistency</li><li>Self-criticism &amp; refinement</li></ul>
+    </div></div>
+    <div class="card modcard"><div class="num">5</div><div class="inner">
+      <span class="chip">Day 2</span><span class="chip co">CO1</span>
+      <h3>Multilingual &amp; Extensions</h3>
+      <ul><li>Tool-use agents</li><li>Code-generation agents</li><li>Multilingual prompting</li></ul>
+    </div></div>
+    <div class="card modcard"><div class="num">6</div><div class="inner">
+      <span class="chip">Day 2</span><span class="chip co">CO2</span>
+      <h3>RAG, Security &amp; Benchmarking</h3>
+      <ul><li>Retrieval-augmented prompting</li><li>Security risks &amp; alignment challenges</li><li>Benchmarking techniques + case study</li></ul>
+    </div></div>
+  </div>
+  <div class="callout" style="margin-top:20px"><b>Patterns clinic &amp; capstone.</b> Two skills blocks weave through the modules: a <b>prompt-patterns clinic</b> (persona, template, flipped-interaction, cognitive-verifier) on Day 1, and a <b>capstone build</b> on Day 2 where teams ship and demo a prompt-based application.</div>
+</section>
+
+<section id="schedule">
+  <span class="eyebrow">Schedule</span>
+  <h2>Two days, fifteen hours</h2>
+  <p class="sub">7.5 hours per day. Timings are relative to each day's start; lunch and short breaks included.</p>
+
+  <div class="day-tag"><span class="dt">Day 1</span> From Prompts to Reliable Outputs</div>
+  <table>
+    <tr><th style="width:110px">Time</th><th>Block</th><th>Concept (≈40%)</th><th>Hands-on (≈60%)</th></tr>
+    <tr><td>0:00–0:15</td><td><b>Kickoff</b></td><td>Course map, tooling, ground rules</td><td class="lab">Set up ChatGPT / Claude / Ollama</td></tr>
+    <tr><td>0:15–1:15</td><td><b>M1</b> Intro to Prompts</td><td>Terminology, components, history; tokens, temperature, context window</td><td class="lab">Lab 0 · First prompts across 3 models</td></tr>
+    <tr><td>1:15–2:45</td><td><b>M2</b> Text-Based</td><td>In-context learning, zero-shot, few-shot, Chain-of-Thought</td><td class="lab">Lab 1 · zero → few → CoT reasoning</td></tr>
+    <tr class="lunch"><td>2:45–3:30</td><td colspan="3">Lunch break</td></tr>
+    <tr><td>3:30–4:45</td><td><b>M4</b> Answer Engineering</td><td>Shape, space, extraction; structured / JSON output</td><td class="lab">Lab 2 · Force JSON, build an extractor</td></tr>
+    <tr><td>4:45–6:00</td><td><b>Patterns Clinic</b></td><td>Persona, template, flipped-interaction, cognitive-verifier; iterative refinement</td><td class="lab">Lab 3 · Build a reusable template</td></tr>
+    <tr><td>6:00–7:00</td><td><b>Applied</b></td><td>Prompting for data-engineering: SQL, docstrings, data cleaning</td><td class="lab">Lab 4 · Prompt-assisted pipeline snippet</td></tr>
+    <tr><td>7:00–7:30</td><td><b>Wrap</b></td><td>Recap + take-home assignment brief</td><td>Q&amp;A</td></tr>
+  </table>
+
+  <div class="day-tag"><span class="dt">Day 2</span> Advanced, Agentic &amp; Responsible Prompting</div>
+  <table>
+    <tr><th style="width:110px">Time</th><th>Block</th><th>Concept (≈40%)</th><th>Hands-on (≈60%)</th></tr>
+    <tr><td>0:00–0:15</td><td><b>Recap</b></td><td>Day-1 review, assignment check-in</td><td>—</td></tr>
+    <tr><td>0:15–1:30</td><td><b>M3</b> Advanced</td><td>Decomposition, ensembling, self-criticism / self-consistency</td><td class="lab">Lab 5 · Least-to-most + self-consistency</td></tr>
+    <tr><td>1:30–2:45</td><td><b>M5</b> Agents &amp; Multilingual</td><td>Tool-use agents, code-gen agents, function calling, multilingual</td><td class="lab">Lab 6 · A tool-using mini-agent</td></tr>
+    <tr class="lunch"><td>2:45–3:30</td><td colspan="3">Lunch break</td></tr>
+    <tr><td>3:30–4:30</td><td><b>M6a</b> RAG</td><td>Grounding, context injection, citations, chunking basics</td><td class="lab">Lab 7 · Mini-RAG over a document</td></tr>
+    <tr><td>4:30–5:30</td><td><b>M6b</b> Security &amp; Eval</td><td>Prompt injection, jailbreaks, alignment; benchmarking &amp; evaluation</td><td class="lab">Lab 8 · Red-team + build an eval harness</td></tr>
+    <tr><td>5:30–7:00</td><td><b>Capstone</b></td><td>Case study + build</td><td class="lab">Capstone · Prompt-based app + team demos</td></tr>
+    <tr><td>7:00–7:30</td><td><b>Close</b></td><td>Assessment, feedback, next steps</td><td>Viva / demo</td></tr>
+  </table>
+</section>
+
+<section id="labs">
+  <span class="eyebrow">Labs</span>
+  <h2>Hands-on labs</h2>
+  <p class="sub">Eight labs plus a capstone. Each has a free web-UI path and an optional local Ollama path. Worksheets and notebooks ship in the <span class="lp">/labs</span> folder.</p>
+  <table>
+    <tr><th style="width:80px">Lab</th><th>Title</th><th>Skill practiced</th><th>Module</th></tr>
+    <tr><td><b>Lab 0</b></td><td>Hello, Prompt</td><td>Same task across ChatGPT, Claude &amp; Ollama; effect of temperature</td><td>M1</td></tr>
+    <tr><td><b>Lab 1</b></td><td>Zero → Few → CoT</td><td>In-context learning; few-shot; chain-of-thought reasoning</td><td>M2</td></tr>
+    <tr><td><b>Lab 2</b></td><td>Structured Output &amp; Extraction</td><td>Answer shape/space; reliable JSON; field extraction</td><td>M4</td></tr>
+    <tr><td><b>Lab 3</b></td><td>Prompt Pattern Toolkit</td><td>Persona, template, flipped-interaction, cognitive-verifier</td><td>Clinic</td></tr>
+    <tr><td><b>Lab 4</b></td><td>Prompting for Data Engineering</td><td>SQL generation, docstrings, data cleaning &amp; validation</td><td>Applied</td></tr>
+    <tr><td><b>Lab 5</b></td><td>Decompose &amp; Self-Consistency</td><td>Least-to-most decomposition; ensembling; self-criticism</td><td>M3</td></tr>
+    <tr><td><b>Lab 6</b></td><td>Build a Tool-Using Agent</td><td>Tool use, function calling, code-generation agent</td><td>M5</td></tr>
+    <tr><td><b>Lab 7</b></td><td>Mini-RAG</td><td>Grounding on a document; citation; hallucination control</td><td>M6a</td></tr>
+    <tr><td><b>Lab 8</b></td><td>Red-Team &amp; Evaluate</td><td>Prompt injection, jailbreak defense; build an eval harness</td><td>M6b</td></tr>
+    <tr><td><b>Capstone</b></td><td>Ship a Prompt-Based App</td><td>End-to-end design, evaluation &amp; demo (CO1 + CO2)</td><td>All</td></tr>
+  </table>
+  <div class="callout" style="margin-top:18px"><b>Ollama quick start.</b> Install from <a href="https://ollama.com" target="_blank" rel="noopener">ollama.com</a>, then run <span class="lp">ollama run llama3.2</span> or <span class="lp">ollama run mistral</span>. Every lab works offline on a laptop with 8&nbsp;GB+ RAM.</div>
+</section>
+
+<section id="assessment">
+  <span class="eyebrow">Assessment</span>
+  <h2>How you're graded</h2>
+  <p class="sub">Balanced across in-class labs, a take-home assignment, and a capstone demo/viva — mapped to CO1 and CO2, weighted toward Bloom's <i>Understand</i> and <i>Apply</i> levels per the approved pattern.</p>
+  <div class="grid g3">
+    <div class="card"><h3>40% · Labs</h3><p>Completion and quality of the eight in-class labs. Continuous, formative.</p></div>
+    <div class="card"><h3>35% · Take-home assignment</h3><p>Build-and-evaluate a prompt-based application with a short technical report.</p></div>
+    <div class="card"><h3>25% · Capstone + viva</h3><p>Team demo of a prompt-based app plus a short individual viva.</p></div>
+  </div>
+  <div class="bloom" style="margin-top:18px">
+    <div class="card"><span class="chip co">CO1</span><h3>Design &amp; optimize</h3><p>Assessed through Labs 0–7, the patterns toolkit, and the assignment build.</p></div>
+    <div class="card"><span class="chip co">CO2</span><h3>Assess &amp; evaluate</h3><p>Assessed through Lab 8 (security + eval), the benchmarking case study, and the capstone report.</p></div>
+  </div>
+</section>
+
+<section id="downloads">
+  <span class="eyebrow">Downloads</span>
+  <h2>Course materials</h2>
+  <p class="sub">Everything you need for the two days. Print the two books; use the slides to review after each session. All free.</p>
+  <div class="grid g3">
+    <div class="card">
+      <h3>Course Reader</h3>
+      <p>Concepts, worked examples and insights for all six modules, plus a one-page cheat sheet.</p>
+      <p style="margin-top:10px"><a href="downloads/Prompt-Engineering-Course-Reader.pdf" style="font-weight:700" download>Download PDF &darr;</a></p>
+    </div>
+    <div class="card">
+      <h3>Lab Manual</h3>
+      <p>All nine labs and the capstone, with setup instructions and the sample-data appendix.</p>
+      <p style="margin-top:10px"><a href="downloads/Prompt-Engineering-Lab-Manual.pdf" style="font-weight:700" download>Download PDF &darr;</a></p>
+    </div>
+    <div class="card">
+      <h3>Session Brief</h3>
+      <p>What to expect over the two days and the pre-class setup checklist.</p>
+      <p style="margin-top:10px"><a href="downloads/Session-Brief_Students-and-Incharge.pdf" style="font-weight:700" download>Download PDF &darr;</a></p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3>Slide decks</h3>
+    <p style="margin-bottom:10px">One deck per module, plus the overview. Presenter notes are included in each file.</p>
+    <p style="margin:0;line-height:2">
+      <a href="downloads/slides/00-title-overview.pptx" download>Overview &amp; welcome</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/01-introduction-to-prompts.pptx" download>M1 · Introduction to Prompts</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/02-text-based-techniques.pptx" download>M2 · Text-Based Techniques</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/03-advanced-techniques.pptx" download>M3 · Advanced Techniques</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/04-answer-engineering.pptx" download>M4 · Answer Engineering</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/05-multilingual-and-extensions.pptx" download>M5 · Multilingual &amp; Extensions</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/06-rag-security-benchmarking.pptx" download>M6 · RAG, Security &amp; Benchmarking</a>
+    </p>
+  </div>
+</section>
+
+<section id="resources">
+  <span class="eyebrow">Resources</span>
+  <h2>References &amp; materials</h2>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Prescribed reference books</h3>
+      <p style="margin-bottom:8px">1. El Amri, A. (2024). <i>LLM Prompt Engineering for Developers.</i> Packt Publishing.</p>
+      <p>2. Berryman, J. &amp; Ziegler, A. (2024). <i>Prompt Engineering for LLMs.</i> O'Reilly Media.</p>
+    </div>
+    <div class="card">
+      <h3>Companion materials</h3>
+      <p style="margin-bottom:6px">Course Reader, Lab Manual, slide decks and the session brief are all in the <a href="#downloads">Downloads</a> section above.</p>
+      <p>Lab worksheets and the sample-data pack are included inside the Lab Manual.</p>
+    </div>
+    <div class="card">
+      <h3>Recommended online</h3>
+      <p style="margin-bottom:6px"><a href="https://learnprompting.org/docs/introduction" target="_blank" rel="noopener">Learn Prompting — Prompt Engineering Guide</a></p>
+      <p style="margin-bottom:6px"><a href="https://arxiv.org/abs/2406.06608" target="_blank" rel="noopener">The Prompt Report (Schulhoff et al., 2024)</a></p>
+      <p style="margin-bottom:6px"><a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank" rel="noopener">OpenAI Prompt Engineering Guide</a></p>
+      <p><a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener">Anthropic Prompt Engineering Docs</a></p>
+    </div>
+    <div class="card">
+      <h3>Course context</h3>
+      <p style="margin-bottom:6px">Delivered for the 5-year Integrated M.Sc (Data Science), Thiagarajar College of Engineering — course 23DS1D0.</p>
+      <p>Syllabus co-designed with Dr. S. T. Padmapriya (TCE).</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="brandlock">
+        <div class="mono">VL</div>
+        <div class="who">Venkat Loganathan<small>Prompt Engineering · One-credit course</small></div>
+      </div>
+    </div>
+    <div>
+      <h4>Course context</h4>
+      <small>23DS1D0 · Five-Year Integrated M.Sc (Data Science)<br>Thiagarajar College of Engineering<br>Skills-first · 15 hours · 2 days</small>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
