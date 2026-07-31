@@ -80,8 +80,8 @@
 
   .stat-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
   .stat{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow)}
-  .stat b{display:block;font-size:29px;color:var(--coral);letter-spacing:-.02em}
-  .stat.alt b{color:var(--turq7)}
+  .stat b{display:block;font-size:28px;color:var(--coral);letter-spacing:-.02em;line-height:1.12}
+  .stat.alt b{color:var(--turq7);font-size:22px;letter-spacing:-.01em}
   .stat span{font-size:13px;color:var(--body)}
 
   .timeline{margin-top:6px}
@@ -124,7 +124,7 @@
       <a href="#about">About</a>
       <a href="#expertise">Expertise</a>
       <a href="#experience">Experience</a>
-      <a href="#teaching">Teaching</a>
+      <a href="#courses">Courses</a>
       <a href="#contact">Contact</a>
       <a class="cta" href="course/">Course</a>
     </nav>
@@ -141,7 +141,7 @@
       <h1>I build and scale AI-first platforms — and the teams behind them.</h1>
       <p class="lede">Senior Director of Engineering at ConverSight, with close to two decades across engineering, product, and AI. I turn ambitious product ideas into reliable, intuitive platforms for global enterprises.</p>
       <div class="cta-row">
-        <a class="btn" href="course/">View my Prompt Engineering course</a>
+        <a class="btn" href="#courses">Explore my courses</a>
         <a class="btn ghost" href="https://www.linkedin.com/in/venkat4/" target="_blank" rel="noopener">Connect on LinkedIn</a>
       </div>
       <div class="quickfacts">
@@ -240,17 +240,23 @@
   </div>
 </section>
 
-<section id="teaching">
+<section id="courses">
   <span class="eyebrow">Teaching</span>
-  <h2>Featured: Prompt Engineering</h2>
-  <p class="sub">A hands-on, skills-first course I designed and teach for postgraduate Data Science &amp; AI students.</p>
-  <div class="feature">
-    <div class="fc">
-      <h3>Prompt Engineering — a 15-hour workshop</h3>
-      <p>Two days, nine labs, a capstone. Students learn to design, optimise, and evaluate prompts across ChatGPT, Claude, and local open-source models — and come away able to prove their prompts work.</p>
-      <p style="color:rgba(255,255,255,.75);font-size:13px">The course page includes the syllabus, schedule, and downloadable reader, lab manual, and slides.</p>
+  <h2>Courses I design &amp; teach</h2>
+  <p class="sub">Hands-on, skills-first workshops — students build real things and leave able to prove it. Each course page has the full syllabus, schedule, and downloadable materials.</p>
+  <div class="grid g2">
+    <div class="card">
+      <span class="chip">PG · Data Science &amp; AI</span><span class="chip t">2 days · 15h</span>
+      <h3 style="margin:6px 0 6px">Prompt Engineering</h3>
+      <p>Design, optimise, and evaluate prompts across ChatGPT, Claude, and local open-source models. Nine labs and a capstone; students leave able to prove their prompts work.</p>
+      <p style="margin-top:14px"><a href="course/" style="font-weight:700">Open the course &rarr;</a></p>
     </div>
-    <a class="btn" href="course/">Open the course &rarr;</a>
+    <div class="card">
+      <span class="chip">UG · CSE / AI &amp; DS / IT</span><span class="chip t">3 days · 15h</span>
+      <h3 style="margin:6px 0 6px">MLOps &amp; Model Deployment</h3>
+      <p>Take one model from a notebook to a live, monitored deployment — MLflow, FastAPI, Docker, CI/CD, and a free cloud host. Six live labs, a capstone, and a mock interview.</p>
+      <p style="margin-top:14px"><a href="mlops/" style="font-weight:700">Open the course &rarr;</a> &nbsp;·&nbsp; <a href="mlops-workshop/" style="font-weight:700;color:var(--turq7)">Interactive workshop &rarr;</a></p>
+    </div>
   </div>
 </section>
 

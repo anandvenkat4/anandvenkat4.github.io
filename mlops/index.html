@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps &amp; Model Deployment — Venkat Loganathan</title>
+<style>
+  :root{
+    --ink:#2A1A20;--ink2:#3D2530;--coral:#EE5A3A;--coral7:#D5472B;--turq:#15B8A6;--turq7:#0E8F86;
+    --soft:#FDECE4;--tsoft:#DCF7F3;--muted:#8A7079;--body:#574047;--line:#F1E2D9;--surface:#FFFCFA;--card:#fff;
+    --sans:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --r-md:10px;--r-lg:14px;--shadow:0 1px 3px rgba(42,26,32,.07),0 10px 30px rgba(42,26,32,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--surface);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--coral);text-decoration:none}a:hover{color:var(--coral7)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--turq)}
+  h1,h2,h3{letter-spacing:-.02em;font-weight:800;line-height:1.1;margin:0}
+  header.top{position:sticky;top:0;z-index:50;background:rgba(255,252,250,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px 24px;flex-wrap:wrap}
+  .brandlock{display:flex;align-items:center;gap:10px}
+  .mono{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--coral),var(--turq));color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .brandlock .who{font-weight:800;font-size:14.5px}
+  .brandlock .who small{display:block;font-weight:600;color:var(--muted);font-size:11px}
+  .links{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
+  .links a{color:var(--body);font-weight:600;font-size:13.5px}
+  .links a:hover{color:var(--coral)}
+  .hero{background:var(--ink);color:#fff;padding:60px 0 66px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-90px;top:-90px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(238,90,58,.5),transparent 70%)}
+  .hero::before{content:"";position:absolute;left:-120px;bottom:-140px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(21,184,166,.28),transparent 70%)}
+  .hero .wrap{position:relative;z-index:1}
+  .hero h1{font-size:44px;margin:14px 0 12px}
+  .hero .lede{font-size:18px;color:#EAD9CE;max-width:670px;margin:0}
+  .cta{display:inline-flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+  .btn{display:inline-block;background:var(--coral);color:#fff;font-weight:700;padding:12px 22px;border-radius:var(--r-md);font-size:14px}
+  .btn:hover{background:var(--coral7);color:#fff}
+  .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+  .meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:30px}
+  .meta div{border-left:2px solid rgba(184,166,155,.45);padding-left:13px}
+  .meta span{display:block;font-size:11px;color:#B8A69B;text-transform:uppercase;letter-spacing:.08em}
+  .meta b{font-size:15px}
+  section{padding:52px 0}
+  section h2{font-size:26px;color:var(--ink);margin:6px 0 6px}
+  .sub{color:var(--muted);margin:0 0 26px;max-width:760px}
+  .grid{display:grid;gap:18px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px;font-size:17px}.card p{margin:0;color:var(--body);font-size:14.5px}
+  .chip{display:inline-block;background:var(--soft);color:var(--coral7);font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;margin:0 6px 8px 0}
+  .chip.t{background:var(--tsoft);color:var(--turq7)}
+  .num{position:absolute;top:-16px;right:-4px;font-size:74px;font-weight:800;color:#FBEDE5;line-height:1;z-index:0;letter-spacing:-.04em}
+  .modcard{position:relative;overflow:hidden}.modcard .inner{position:relative;z-index:1}
+  .modcard ul{margin:10px 0 0;padding-left:18px;color:var(--body);font-size:14px}.modcard ul li{margin-bottom:3px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;font-size:14px}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#FBF3EE;color:var(--ink);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+  tr:last-child td{border-bottom:none}
+  .day-tag{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;font-weight:700;padding:9px 17px;border-radius:var(--r-md);margin:16px 0 12px;font-size:14px}
+  .day-tag .dt{color:var(--turq)}
+  .lab{color:var(--turq7);font-weight:600}
+  .callout{background:var(--tsoft);border:1px solid #A7EFE6;border-left:4px solid var(--turq);border-radius:var(--r-md);padding:16px 18px;color:#0E5C55;font-size:14.5px}
+  .lp{font-family:var(--mono);font-size:12.5px;color:var(--coral7);background:var(--soft);padding:1px 6px;border-radius:5px}
+  footer{background:var(--ink);color:#B8A69B;padding:36px 0;margin-top:16px}
+  footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  footer .who{color:#fff;font-weight:800}
+  footer a{color:#F4A98C}
+  @media(max-width:820px){.g2,.g3{grid-template-columns:1fr}.hero h1{font-size:30px}.links{width:100%;margin-left:0}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="nav">
+    <div class="brandlock"><div class="mono">VL</div><div class="who">Venkat Loganathan<small>MLOps &amp; Model Deployment</small></div></div>
+    <nav class="links">
+      <a href="../">← Home</a>
+      <a href="#overview">Overview</a>
+      <a href="#outcomes">Outcomes</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#labs">Labs</a>
+      <a href="#assessment">Assessment</a>
+      <a href="#downloads">Downloads</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">1-credit course · 15 hours · 3 days × 5 hrs</span>
+    <h1>MLOps &amp; Model Deployment</h1>
+    <p class="lede">Take one model all the way to a live, monitored deployment — train, track, serve, containerize, automate, deploy, and monitor. A hands-on workshop for UG students in CSE, AI &amp; DS, and IT.</p>
+    <div class="cta">
+      <a class="btn" href="../mlops-workshop/" style="background:var(--turq)">Launch the interactive workshop →</a>
+      <a class="btn ghost" href="#schedule">3-day schedule</a>
+      <a class="btn ghost" href="#downloads">Materials</a>
+    </div>
+    <div class="meta">
+      <div><span>Credits</span><b>1 · 15 hours</b></div>
+      <div><span>Format</span><b>~70% hands-on labs</b></div>
+      <div><span>Deploy</span><b>Live public URL by day 3</b></div>
+      <div><span>Cost</span><b>Free tools only</b></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+<section id="overview">
+  <span class="eyebrow">Overview</span>
+  <h2>What this course does</h2>
+  <p class="sub">Most people finish a course knowing how to train a model in a notebook — and have no idea what happens next. This course closes that gap. You build one project and carry it end to end, so by day three you have a real model running on the internet that you can put on your CV.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Build, don't just watch</h3><p>Six live labs and a capstone. Every concept is followed immediately by hands-on work, in pairs.</p></div>
+    <div class="card"><h3>Industry tools, zero cost</h3><p>MLflow, FastAPI, Docker, GitHub Actions, and a free host (Hugging Face Spaces / Render). No cloud bills.</p></div>
+    <div class="card"><h3>Interview-ready</h3><p>Assessed by a live demo and a mock technical interview — everything you build becomes your portfolio.</p></div>
+  </div>
+</section>
+
+<section id="outcomes">
+  <span class="eyebrow">Outcomes</span>
+  <h2>What you'll be able to do</h2>
+  <div class="grid g2">
+    <div class="card"><span class="chip">CO1</span><h3>Understand the ML lifecycle</h3><p>Know why models fail after training and what MLOps maturity looks like.</p></div>
+    <div class="card"><span class="chip t">CO2</span><h3>Track &amp; reproduce</h3><p>Version data and models, track experiments, and make ML work reproducible.</p></div>
+    <div class="card"><span class="chip">CO3</span><h3>Package &amp; serve</h3><p>Turn a trained model into a production-grade REST API.</p></div>
+    <div class="card"><span class="chip t">CO4</span><h3>Containerize, automate &amp; deploy</h3><p>Use Docker, CI/CD and a free cloud host to ship the model.</p></div>
+    <div class="card"><span class="chip">CO5</span><h3>Monitor &amp; govern</h3><p>Detect drift, set retraining triggers, and apply governance and responsible ML.</p></div>
+    <div class="card"><span class="chip t">Toolchain</span><h3>The stack you'll master</h3><p>MLflow · FastAPI · Docker · GitHub Actions · Hugging Face Spaces / Render · scipy.</p></div>
+  </div>
+</section>
+
+<section id="pipeline">
+  <span class="eyebrow">The through-line</span>
+  <h2>One pipeline, start to finish</h2>
+  <p class="sub">Everything connects. You build this once and extend it every session — nothing is disconnected.</p>
+  <div class="grid g3">
+    <div class="card modcard"><div class="num">1</div><div class="inner"><span class="chip">Day 1</span><h3>Train &amp; track</h3><ul><li>Train a model</li><li>Log runs to MLflow</li><li>Register &amp; version it</li></ul></div></div>
+    <div class="card modcard"><div class="num">2</div><div class="inner"><span class="chip t">Day 2</span><h3>Serve &amp; package</h3><ul><li>Serialize the model</li><li>FastAPI REST service</li><li>Docker container</li></ul></div></div>
+    <div class="card modcard"><div class="num">3</div><div class="inner"><span class="chip">Day 3</span><h3>Ship &amp; watch</h3><ul><li>CI/CD with GitHub Actions</li><li>Deploy to a live URL</li><li>Monitor for drift</li></ul></div></div>
+  </div>
+  <div class="callout" style="margin-top:20px"><b>Built for interaction.</b> Live-coding, pair programming, a "break it" challenge in every lab, a running class leaderboard, and a day-3 demo day + mock technical interview.</div>
+</section>
+
+<section id="schedule">
+  <span class="eyebrow">Schedule</span>
+  <h2>Three days, fifteen hours</h2>
+  <p class="sub">5 hours per day. Seven of ten sessions are live labs.</p>
+
+  <div class="day-tag"><span class="dt">Day 1</span> Foundations &amp; Experiment Management</div>
+  <table>
+    <tr><th style="width:80px">#</th><th>Session</th><th>Mode</th><th style="width:70px">Hrs</th></tr>
+    <tr><td>1</td><td>Introduction to MLOps — lifecycle, why models fail, maturity, team roles</td><td>Lecture</td><td>1.5</td></tr>
+    <tr><td>2</td><td>Data &amp; Feature Management — versioning, reproducibility, train/serve skew</td><td>Lecture</td><td>1.0</td></tr>
+    <tr><td>3</td><td>Experiment Tracking with MLflow — log, compare, register a model</td><td class="lab">Live lab</td><td>2.5</td></tr>
+  </table>
+
+  <div class="day-tag"><span class="dt">Day 2</span> Packaging &amp; Serving</div>
+  <table>
+    <tr><th style="width:80px">#</th><th>Session</th><th>Mode</th><th style="width:70px">Hrs</th></tr>
+    <tr><td>4</td><td>Model Serialization &amp; Packaging — joblib/ONNX, dependency pinning</td><td>Lecture</td><td>1.0</td></tr>
+    <tr><td>5</td><td>Serving Models with FastAPI — endpoints, validation, health checks</td><td class="lab">Live lab</td><td>2.0</td></tr>
+    <tr><td>6</td><td>Containerization with Docker — Dockerfile, build, run, ports</td><td class="lab">Live lab</td><td>2.0</td></tr>
+  </table>
+
+  <div class="day-tag"><span class="dt">Day 3</span> Automation, Deployment &amp; Monitoring</div>
+  <table>
+    <tr><th style="width:80px">#</th><th>Session</th><th>Mode</th><th style="width:70px">Hrs</th></tr>
+    <tr><td>7</td><td>CI/CD for ML (GitHub Actions) — lint/test/build, model accuracy gate</td><td class="lab">Live lab</td><td>2.0</td></tr>
+    <tr><td>8</td><td>Cloud Deployment (free host) — deploy the container to a public URL</td><td class="lab">Live lab</td><td>1.5</td></tr>
+    <tr><td>9</td><td>Monitoring, Drift &amp; Governance — detect drift, retraining triggers</td><td>Lecture</td><td>1.0</td></tr>
+    <tr><td>10</td><td>Capstone &amp; Wrap-up — end-to-end demo + mock technical interview</td><td class="lab">Live lab</td><td>0.5</td></tr>
+  </table>
+</section>
+
+<section id="labs">
+  <span class="eyebrow">Labs</span>
+  <h2>Hands-on labs</h2>
+  <p class="sub">Six live labs and a capstone, all building one project on free, local tools with a free public host for deployment.</p>
+  <table>
+    <tr><th style="width:80px">Lab</th><th>Title</th><th>You'll ship</th></tr>
+    <tr><td><b>Lab 1</b></td><td>Experiment Tracking (MLflow)</td><td>Tracked runs + a registered, versioned model</td></tr>
+    <tr><td><b>Lab 2</b></td><td>Serve with FastAPI</td><td>A validated REST API for your model</td></tr>
+    <tr><td><b>Lab 3</b></td><td>Containerize with Docker</td><td>Your API running inside a container</td></tr>
+    <tr><td><b>Lab 4</b></td><td>CI/CD with GitHub Actions</td><td>A green pipeline + a model accuracy gate</td></tr>
+    <tr><td><b>Lab 5</b></td><td>Deploy to a live URL</td><td>Your model, public on the internet</td></tr>
+    <tr><td><b>Lab 6</b></td><td>Monitoring &amp; Drift</td><td>A drift check + a retraining trigger</td></tr>
+    <tr><td><b>Capstone</b></td><td>Demo &amp; Mock Interview</td><td>End-to-end demo + interview-ready answers</td></tr>
+  </table>
+  <div class="callout" style="margin-top:18px"><b>Setup:</b> a laptop with <span class="lp">Python 3</span> and <span class="lp">Docker</span>, plus free <b>GitHub</b> and <b>Hugging Face</b> accounts. Full instructions are in the Lab Manual below.</div>
+</section>
+
+<section id="assessment">
+  <span class="eyebrow">Assessment</span>
+  <h2>How you're graded</h2>
+  <div class="grid g3">
+    <div class="card"><h3>30% · Quiz</h3><p>A short quiz across the concepts at the end of the course.</p></div>
+    <div class="card"><h3>40% · Live lab demo</h3><p>Demonstrate your deployed model working from its public URL.</p></div>
+    <div class="card"><h3>30% · Mock interview</h3><p>A real MLOps technical interview on what you built.</p></div>
+  </div>
+</section>
+
+<section id="downloads">
+  <span class="eyebrow">Downloads</span>
+  <h2>Course materials</h2>
+  <p class="sub">Print the two books; use the slides to review after each session. All free.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Course Reader</h3><p>Concepts, examples and insights for all ten sessions, plus a cheat sheet.</p><p style="margin-top:10px"><a href="downloads/MLOps-Course-Reader.pdf" style="font-weight:700" download>Download PDF ↓</a></p></div>
+    <div class="card"><h3>Lab Manual</h3><p>Six labs and the capstone, with setup and the sample-project through-line.</p><p style="margin-top:10px"><a href="downloads/MLOps-Lab-Manual.pdf" style="font-weight:700" download>Download PDF ↓</a></p></div>
+    <div class="card"><h3>Session Brief</h3><p>What to expect and the pre-class setup checklist.</p><p style="margin-top:10px"><a href="downloads/MLOps-Session-Brief_Students.pdf" style="font-weight:700" download>Download PDF ↓</a></p></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3>Slide decks</h3>
+    <p style="margin-bottom:10px">Overview plus one deck per day. Presenter notes are included in each file.</p>
+    <p style="margin:0;line-height:2">
+      <a href="downloads/slides/00-overview.pptx" download>Overview</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/01-day1-foundations-tracking.pptx" download>Day 1 · Foundations &amp; Tracking</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/02-day2-packaging-serving.pptx" download>Day 2 · Packaging &amp; Serving</a> &nbsp;·&nbsp;
+      <a href="downloads/slides/03-day3-deploy-monitor.pptx" download>Day 3 · Deploy &amp; Monitor</a>
+    </p>
+  </div>
+  <div class="callout" style="margin-top:18px">Delivered for Vel Tech Rangarajan Dr. Sagunthala R&amp;D Institute of Science &amp; Technology. A sample project repo accompanies the labs.</div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><div class="who">Venkat Loganathan</div><div style="font-size:13px;margin-top:4px">MLOps &amp; Model Deployment · Vel Tech</div></div>
+    <div style="text-align:right;font-size:13px">
+      <a href="../">← Back to portfolio</a><br>
+      <a href="https://www.linkedin.com/in/venkat4/" target="_blank" rel="noopener">linkedin.com/in/venkat4</a> · +91 91766 62877
+    </div>
+  </div>
+</footer>
+</body>
+</html>

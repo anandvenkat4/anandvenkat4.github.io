@@ -52,7 +52,10 @@ Re-upload a changed file (Option A) or `git add . && git commit -m "update" && g
 
 - `index.html` &mdash; your **portfolio landing page** (https://anandvenkat4.github.io).
 - `course/index.html` &mdash; the **Prompt Engineering course** page (https://anandvenkat4.github.io/course/).
-- `course/downloads/` &mdash; student PDFs and slide decks linked from the course page.
+- `course/downloads/` &mdash; Prompt Engineering PDFs and slide decks.
+- `mlops/index.html` &mdash; the **MLOps &amp; Model Deployment course** page (https://anandvenkat4.github.io/mlops/).
+- `mlops/downloads/` &mdash; MLOps PDFs and slide decks.
+- The landing page has a **Courses** section linking to both course pages.
 
 ## What's published
 
