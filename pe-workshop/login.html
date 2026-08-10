@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+
+<main class="wrap" style="max-width:520px">
+  <div class="mhead"><div class="k">Sign in</div><h1>Join the workshop</h1>
+    <div class="goal">Your progress and answers are saved <b>in this browser</b> — no account, no server. At the end you'll generate a submit code.</div></div>
+
+  <div class="card">
+    <div id="signedin" style="display:none">
+      <p>You're signed in as <b id="who"></b>.</p>
+      <div class="launch">
+        <a class="btn" href="index.html">Continue →</a>
+        <a class="btn" href="my-workbook.html" style="background:var(--turq)">My workbook</a>
+        <button class="btn" id="signout" style="background:#fff;color:var(--coral7);border:1px solid var(--coral)">Sign out</button>
+      </div>
+    </div>
+    <form id="form">
+      <label style="display:block;font-weight:700;font-size:13px;margin:8px 0 3px">Full name</label>
+      <input id="name" required style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px">
+      <label style="display:block;font-weight:700;font-size:13px;margin:12px 0 3px">Roll number</label>
+      <input id="roll" required style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px">
+      <label style="display:block;font-weight:700;font-size:13px;margin:12px 0 3px">Workshop code <span style="color:var(--muted);font-weight:400">(on the board)</span></label>
+      <input id="code" placeholder="e.g. MLOPS-VT-AUG" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px">
+      <button class="btn" type="submit" style="margin-top:16px;width:100%">Sign in &amp; start</button>
+    </form>
+  </div>
+  <p style="color:var(--muted);font-size:13px;margin-top:14px">Tip: use the same browser all three days so your workbook stays with you.</p>
+</main>
+
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
+<script src="assets/site.js?v=pe1"></script>
+<script>
+  const s=MLW.studentGet();
+  if(s){document.getElementById('form').style.display='none';document.getElementById('signedin').style.display='block';document.getElementById('who').textContent=(s.name||'')+' · '+(s.roll||'');}
+  document.getElementById('form').addEventListener('submit',function(e){e.preventDefault();
+    var nm=document.getElementById('name').value.trim();
+    var rl=document.getElementById('roll').value.trim();
+    var cd=document.getElementById('code').value.trim();
+    if(!nm||!rl){alert('Please enter your name and roll number.');return;}
+    MLW.studentSet({name:nm,roll:rl,code:cd,joinedAt:Date.now()});
+    location.href='index.html';});
+  const so=document.getElementById('signout'); if(so)so.addEventListener('click',()=>{localStorage.removeItem('pe_student');location.reload();});
+</script>
+</body>
+</html>

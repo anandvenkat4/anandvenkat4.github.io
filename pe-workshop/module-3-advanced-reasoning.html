@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M3 · Advanced reasoning — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+<div class="facbar">INTERNAL — do not project the facilitator view to students</div>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Module 3 · Day 2 · 09:15–10:45 incl. Lab 5</div>
+    <h1>Advanced reasoning — buying reliability with compute</h1>
+    <div class="goal">Day 1 was about <b>asking well</b>. Today is about what to do when asking well <b>still isn't enough</b> — and how to justify the extra cost.</div>
+  </div>
+
+  <div class="facnote" data-notes="m3"></div>
+
+  <div class="story reveal">
+    <div class="tag">Start here · the uncomfortable demo</div>
+    <h3>The same prompt, run twice, two different answers</h3>
+    <p>Yesterday you learned to write a clear prompt. Here is the thing nobody tells you: <b>a good prompt run twice can give you two different answers.</b> Not because the model is broken — because sampling is random.</p>
+    <p>If your prompt is right 70% of the time, you do not have a 70%-accurate system. You have a system that is <i>wrong in a way you cannot predict</i>. Every technique today exists to attack that.</p>
+    <p style="margin-bottom:0"><b>The trade is always the same: more tokens, more reliability.</b> Your job is to decide when that trade is worth paying for.</p>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Where we are</h3>
+    <div class="pipe-anim">
+      <span class="hop">CLEAR INSTRUCTION</span><span class="arw">▶</span>
+      <span class="hop">EXAMPLES</span><span class="arw">▶</span>
+      <span class="hop" style="background:var(--coral);border-color:var(--coral)">REASONING</span><span class="arw">▶</span>
+      <span class="hop" style="background:var(--coral);border-color:var(--coral)">SAMPLING</span><span class="arw">▶</span>
+      <span class="hop">GROUNDING</span><span class="arw">▶</span><span class="hop">DEFENCE</span>
+    </div>
+    <p style="margin-bottom:0">Two hops today before lunch. Grounding and defence come this afternoon.</p>
+  </div>
+
+  <!-- ── 1. THE LADDER ── -->
+  <div class="concept reveal">
+    <h3>Four techniques on one task — watch them fail, then succeed</h3>
+    <p>One arithmetic word problem, four prompting styles, the same model throughout. Step through and read <i>why</i> each one behaves as it does.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">step through</span> The prompting ladder</div>
+    <div class="sbbody" id="ladder"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Few-shot fixes format, not thinking</b>This is the most common misconception in the room. Examples teach the model what the answer should <i>look like</i>. If the task needs reasoning, examples alone will not supply it.</div>
+      <div class="term"><b>CoT was always available</b>The model did not become smarter. The reasoning was latent; the prompt simply had to ask for it. <i>Wei et al., 2022</i> — chain-of-thought emerges with scale.</div>
+    </div>
+  </div>
+
+  <div class="check" data-check="pe-cc1" data-answer="C">
+    <div class="q">Concept check 1 — Few-shot examples improved the format but not the answer. Why?</div>
+    <div class="protocol">Commit on your own → discuss with your pair → commit again → reveal</div>
+    <button class="opt" data-opt="A">A. The examples were badly written <span class="why">They were fine — and the format did improve.</span></button>
+    <button class="opt" data-opt="B">B. The model is too small <span class="why">The same model got it right with chain-of-thought, so capability was not the limit.</span></button>
+    <button class="opt" data-opt="C">C. Examples demonstrate output shape, not the reasoning process <span class="why">Correct. The model copied the <i>appearance</i> of a solved example without performing the intermediate steps. Ask for the steps and you get them.</span></button>
+    <button class="opt" data-opt="D">D. Temperature was too high <span class="why">Temperature affects variance, not whether reasoning happens at all.</span></button>
+  </div>
+
+  <!-- ── 2. SELF-CONSISTENCY ── -->
+  <div class="concept reveal">
+    <h3>Self-consistency — sample, then vote</h3>
+    <p>If a single run is unreliable, run it several times and take the majority. It feels almost too simple, and it works: <i>Wang et al., 2022</i> reported double-digit gains on reasoning benchmarks from voting alone.</p>
+    <p>Sample the model below. Watch individual runs disagree — then watch the vote settle.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">live</span> Sample and vote</div>
+    <div class="sbbody" id="sc"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Needs temperature > 0</b>At temperature 0 every sample is identical and voting is pointless. Diversity is the mechanism.</div>
+      <div class="term"><b>Use odd numbers</b>3, 5 or 7 samples. Even numbers can tie.</div>
+      <div class="term"><b>It reduces variance, not bias</b>If the model is wrong <i>on average</i>, voting confidently returns the wrong answer. This is the limitation to say out loud in a viva.</div>
+      <div class="term"><b>Needs a comparable answer</b>You can vote on "Rs 4". You cannot vote on three different paragraphs of prose.</div>
+    </div>
+  </div>
+
+  <div class="check" data-check="pe-cc2" data-answer="B">
+    <div class="q">Concept check 2 — Which task would self-consistency <i>not</i> help?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. A multi-step maths problem <span class="why">Ideal case — discrete answer, variable reasoning.</span></button>
+    <button class="opt" data-opt="B">B. "Write a creative product description" <span class="why">Correct. There is no single right answer to vote on, and five samples give five valid different descriptions. Voting needs a comparable, discrete output.</span></button>
+    <button class="opt" data-opt="C">C. Classifying a ticket into one of five categories <span class="why">Works well — the label is discrete and votable.</span></button>
+    <button class="opt" data-opt="D">D. Extracting a date from a document <span class="why">Works — the answer is comparable.</span></button>
+  </div>
+
+  <!-- ── 3. DECOMPOSITION ── -->
+  <div class="concept reveal">
+    <h3>Decomposition — make failure visible</h3>
+    <p>Instead of one prompt doing five things, use five prompts doing one thing each, feeding forward. <b>Least-to-most prompting</b> (Zhou et al., 2022) does exactly this.</p>
+    <p>The accuracy gain is real but secondary. <b>The real prize is debuggability:</b> when a chain fails you can see which link broke. When a single mega-prompt fails, you get one wrong number and no clue.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">order them</span> Build the chain</div>
+    <div class="sbbody" id="dec"></div>
+  </div>
+
+  <!-- ── 4. SELF-REFINE ── -->
+  <div class="concept reveal">
+    <h3>Self-criticism — powerful, and quietly dangerous</h3>
+    <p>Ask the model to critique its own answer and revise it. It is remarkably good at this — <i>Madaan et al., 2023 (Self-Refine)</i>. Step through the loop below, and watch carefully at pass 4.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">step through</span> Draft → critique → revise → ?</div>
+    <div class="sbbody" id="refine"></div>
+  </div>
+
+  <div class="check" data-check="pe-cc3" data-answer="A">
+    <div class="q">Concept check 3 — In that loop, the model invented "Policy 4.2" and then approved its own answer. What does this tell you?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Self-critique improves form and completeness but cannot verify facts it invented <span class="why">Correct — and it is the most important caveat in this module. A model cannot notice a hallucination it is not aware of making. Grounding or a human check is required.</span></button>
+    <button class="opt" data-opt="B">B. The critique prompt was written badly <span class="why">A better critique prompt helps a little, but the fundamental blind spot remains.</span></button>
+    <button class="opt" data-opt="C">C. Self-refine should never be used <span class="why">Too strong — it genuinely improves structure, tone and completeness.</span></button>
+    <button class="opt" data-opt="D">D. The model needed more examples <span class="why">Examples would not have stopped the invented citation.</span></button>
+  </div>
+
+  <!-- ── 5. COST ── -->
+  <div class="concept reveal">
+    <h3>The bill — and how to defend it</h3>
+    <p>Every technique today costs tokens, latency and money. Drag through them and watch what you actually buy.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">drag it</span> Accuracy versus cost</div>
+    <div class="sbbody" id="cost"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Diminishing returns are brutal</b>CoT → self-consistency buys +8 points for 5x the tokens. The next step buys +2 for another 2.3x. Know where the curve flattens.</div>
+      <div class="term"><b>Never justify with a vibe</b>"It seemed better" is not an answer. Measure on a fixed test set — that is Lab 8 and it is the core of CO2.</div>
+    </div>
+  </div>
+
+  <!-- ── 6. CHOOSING ── -->
+  <div class="concept reveal">
+    <h3>Choosing under pressure</h3>
+    <p>Five realistic situations. Pick what you would actually reach for.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">decide</span> Which technique fits?</div>
+    <div class="sbbody" id="pick"></div>
+  </div>
+
+  <!-- ── 7. BRING YOUR OWN OUTPUT ── -->
+  <div class="ex reveal">
+    <div class="tag">Bring your own output</div>
+    <h3>Score a real answer from your own model</h3>
+    <div id="rubric"></div>
+  </div>
+
+  <div class="lab reveal">
+    <div class="k">Lab 5 · 55 minutes</div>
+    <h3>Make an unreliable prompt reliable — and prove it</h3>
+    <p>Take a task your model gets wrong <i>some</i> of the time. Apply decomposition or self-consistency. Measure before and after on 5–8 items.</p>
+    <ul>
+      <li><b>Done =</b> a before/after accuracy number on the same test items, plus both prompts.</li>
+      <li><b>Break it:</b> find a task where the technique makes things <i>worse</i>. They exist, and finding one is worth more than another success.</li>
+      <li><b>Stretch:</b> add a self-critique pass and check whether it actually helped or just sounded better.</li>
+    </ul>
+  </div>
+
+  <div class="pager">
+    <a href="index.html"><small>Back</small><b>← Home</b></a>
+    <a class="next" href="module-5-agents-multilingual.html"><small>Next</small><b>M5 · Agents →</b></a>
+  </div>
+</main>
+
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a> · <a href="../course/">Course page</a></div></footer>
+<script src="assets/script-data.js?v=pe1"></script>
+<script src="assets/pe-playground.js?v=pe1"></script>
+<script src="assets/site.js?v=pe1"></script>
+<script>
+  PEPG.promptLadder('ladder');
+  PEPG.selfConsistency('sc');
+  PEPG.decomposer('dec');
+  PEPG.selfRefine('refine');
+  PEPG.costMeter('cost');
+  PEPG.pickTechnique('pick');
+  PEPG.rubricCheck('rubric');
+</script>
+</body>
+</html>

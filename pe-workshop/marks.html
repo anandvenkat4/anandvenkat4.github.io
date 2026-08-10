@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marks tally — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+<style>
+  .mtable{width:100%;border-collapse:collapse;font-size:14px}
+  .mtable th{text-align:left;padding:8px 10px;background:var(--ink);color:#fff;font-size:12px;
+    text-transform:uppercase;letter-spacing:.05em;cursor:pointer;white-space:nowrap}
+  .mtable td{padding:7px 10px;border-top:1px solid var(--line)}
+  .mtable tr.bad td{background:#FDEEEC}
+  .mtable tr.dup td{background:var(--amberbg)}
+  .stat{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;margin:0 8px 8px 0;min-width:96px}
+  .stat b{display:block;font-size:22px;color:var(--coral)}
+  .stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .hist{display:flex;align-items:flex-end;gap:6px;height:110px;margin:10px 0}
+  .hist div{flex:1;background:var(--turq);border-radius:5px 5px 0 0;position:relative;min-height:2px}
+  .hist div span{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--ink)}
+  .hist div i{position:absolute;bottom:-19px;left:0;right:0;text-align:center;font-size:10px;color:var(--muted);font-style:normal}
+  textarea{width:100%;min-height:120px;padding:11px;border:1.5px solid var(--line);border-radius:10px;
+    font-family:var(--mono);font-size:13px}
+</style>
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Marks tally · facilitator</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="exam.html">Exam</a>
+</div></header>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Facilitator tool · nothing here is linked from the student pages</div>
+    <h1>Marks tally</h1>
+    <div class="goal">Paste the submit codes students show you — one per line, any order. Each code is checked against its own checksum, so a mistyped code is caught rather than silently recorded.</div>
+  </div>
+
+  <div class="concept">
+    <h3>1 · Paste the codes</h3>
+    <p style="font-size:14px">Format is <code>ROLL-SCORE-TOTAL-CHECK</code>, e.g. <code>21CS001-42-50-K3P9</code>. Extra spaces, blank lines and commas are fine.</p>
+    <textarea id="in" placeholder="21CS001-42-50-K3P9&#10;21CS002-38-50-9XQ2&#10;..."></textarea>
+    <div class="sbctrls" style="margin-top:10px">
+      <button class="btn turq" id="add">Add these codes</button>
+      <button class="btn ghost" id="csv">Download CSV</button>
+      <button class="btn ghost" id="clear">Clear all</button>
+    </div>
+  </div>
+
+  <div class="concept">
+    <h3>2 · Add a mark by hand</h3>
+    <p style="font-size:14px">For a student whose browser failed. Marked <b>manual</b> in the table so you can see it was not auto-checked.</p>
+    <div class="sbctrls">
+      <input id="mroll" placeholder="roll number" style="padding:9px 11px;border:1.5px solid var(--line);border-radius:8px">
+      <input id="mscore" type="number" min="0" placeholder="score" style="width:110px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px">
+      <span style="color:var(--muted)">out of</span>
+      <input id="mtotal" type="number" min="1" value="50" style="width:90px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px">
+      <button class="btn ghost" id="madd">Add manually</button>
+    </div>
+  </div>
+
+  <div id="summary"></div>
+
+  <div class="concept">
+    <h3>3 · The register <span class="pill" id="cnt">0</span></h3>
+    <div id="msgs"></div>
+    <div style="overflow:auto"><table class="mtable" id="tbl"></table></div>
+  </div>
+
+  <div class="story">
+    <div class="tag">Worth knowing</div>
+    <p>The checksum catches <b>typos and transcription errors</b> — it is not tamper-proof. Everything runs in the browser, so a student who reads the page source could construct a valid-looking code. <b>Your invigilation is the real control</b>; glance at each student's result screen as they show you the code.</p>
+    <p style="margin-bottom:0">This register is stored in this browser only. <b>Download the CSV before you close the tab</b> — that is your durable copy.</p>
+  </div>
+</main>
+
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
+<script>
+(function(){
+  'use strict';
+  var KEY='pe_marks_v1', PASS=50;
+  function hash(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return (x>>>0).toString(36);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  var rows=[]; try{rows=JSON.parse(localStorage.getItem(KEY))||[]}catch(e){rows=[]}
+  var sortKey='roll', sortDir=1;
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(rows))}catch(e){}}
+
+  function parseCode(raw){
+    var c=raw.trim().toUpperCase().replace(/[,;]+$/,'');
+    if(!c) return null;
+    var m=c.match(/^(.+)-(\d+)-(\d+)-([A-Z0-9]+)$/);
+    if(!m) return {raw:c, ok:false, why:'not in ROLL-SCORE-TOTAL-CHECK format'};
+    var roll=m[1], score=+m[2], total=+m[3], chk=m[4];
+    var want=hash(roll+'|'+score+'|'+total).toUpperCase();
+    if(want!==chk) return {raw:c, roll:roll, score:score, total:total, ok:false, why:'checksum does not match — likely mistyped'};
+    if(score>total) return {raw:c, roll:roll, score:score, total:total, ok:false, why:'score exceeds total'};
+    return {raw:c, roll:roll, score:score, total:total, ok:true, manual:false};
+  }
+
+  function addRows(list){
+    var added=0, bad=0, dups=0, msgs=[];
+    list.forEach(function(r){
+      if(!r) return;
+      if(!r.ok){ bad++; msgs.push('<div class="status no" style="font-size:13px">✗ <code>'+esc(r.raw)+'</code> — '+r.why+'</div>'); return; }
+      var exist=rows.filter(function(x){return x.roll===r.roll;});
+      if(exist.length){ dups++; msgs.push('<div class="status" style="font-size:13px;color:#9A6B12">! <b>'+esc(r.roll)+'</b> already in the register ('+exist[0].score+'/'+exist[0].total+') — kept the first, flagged both</div>');
+        r.dup=true; exist[0].dup=true; }
+      rows.push(r); added++;
+    });
+    save();
+    document.getElementById('msgs').innerHTML=msgs.join('')||
+      (added?'<div class="status ok" style="font-size:13px">✓ Added '+added+' code'+(added>1?'s':'')+'.</div>':'');
+    render();
+    return {added:added,bad:bad,dups:dups};
+  }
+
+  function render(){
+    var t=document.getElementById('tbl');
+    var sorted=rows.slice().sort(function(a,b){
+      var A,B;
+      if(sortKey==='pct'){A=a.score/a.total;B=b.score/b.total;}
+      else if(sortKey==='score'){A=a.score;B=b.score;}
+      else {A=String(a.roll);B=String(b.roll);}
+      return (A>B?1:A<B?-1:0)*sortDir;
+    });
+    var head='<tr><th data-k="roll">Roll ▲▼</th><th data-k="score">Marks ▲▼</th>'+
+      '<th data-k="pct">% ▲▼</th><th>Band</th><th>Source</th><th></th></tr>';
+    t.innerHTML=head+sorted.map(function(r){
+      var pct=Math.round(r.score/r.total*100);
+      var band=pct>=80?'Distinction':pct>=PASS?'Pass':'Below '+PASS+'%';
+      var cls=r.dup?'dup':'';
+      return '<tr class="'+cls+'"><td><b>'+esc(r.roll)+'</b></td><td>'+r.score+' / '+r.total+'</td>'+
+        '<td><b style="color:'+(pct>=PASS?'var(--turq7)':'var(--bad)')+'">'+pct+'%</b></td>'+
+        '<td>'+band+'</td><td>'+(r.manual?'<span class="pill a">manual</span>':'<span class="pill g">code ✓</span>')+
+        (r.dup?' <span class="pill a">duplicate roll</span>':'')+'</td>'+
+        '<td><button class="btn ghost" data-del="'+esc(r.roll)+'|'+r.score+'" style="padding:3px 9px;font-size:12px">remove</button></td></tr>';
+    }).join('');
+    document.getElementById('cnt').textContent=rows.length+' recorded';
+    [].slice.call(t.querySelectorAll('th[data-k]')).forEach(function(th){
+      th.onclick=function(){ var k=th.dataset.k; if(sortKey===k)sortDir*=-1; else {sortKey=k;sortDir=1;} render(); };
+    });
+    [].slice.call(t.querySelectorAll('[data-del]')).forEach(function(b){
+      b.onclick=function(){ var p=b.dataset.del.split('|');
+        var i=rows.findIndex(function(x){return x.roll===p[0]&&String(x.score)===p[1];});
+        if(i>=0){rows.splice(i,1);save();render();} };
+    });
+    summary();
+  }
+
+  function summary(){
+    var el=document.getElementById('summary');
+    if(!rows.length){ el.innerHTML=''; return; }
+    var pcts=rows.map(function(r){return r.score/r.total*100;});
+    var n=pcts.length, mean=pcts.reduce(function(a,b){return a+b;},0)/n;
+    var s=pcts.slice().sort(function(a,b){return a-b;});
+    var med=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;
+    var passed=pcts.filter(function(p){return p>=PASS;}).length;
+    var bins=[0,0,0,0,0], labels=['<40','40-59','60-74','75-89','90+'];
+    pcts.forEach(function(p){ bins[p<40?0:p<60?1:p<75?2:p<90?3:4]++; });
+    var mx=Math.max.apply(null,bins)||1;
+    el.innerHTML='<div class="concept"><h3>At a glance</h3>'+
+      '<div><span class="stat"><b>'+n+'</b><span>recorded</span></span>'+
+      '<span class="stat"><b>'+Math.round(mean)+'%</b><span>mean</span></span>'+
+      '<span class="stat"><b>'+Math.round(med)+'%</b><span>median</span></span>'+
+      '<span class="stat"><b>'+Math.round(s[0])+'%</b><span>lowest</span></span>'+
+      '<span class="stat"><b>'+Math.round(s[n-1])+'%</b><span>highest</span></span>'+
+      '<span class="stat"><b>'+passed+'</b><span>at/above '+PASS+'%</span></span></div>'+
+      '<div class="hist">'+bins.map(function(b,i){
+        return '<div style="height:'+Math.round(b/mx*100)+'%"><span>'+(b||'')+'</span><i>'+labels[i]+'</i></div>';}).join('')+
+      '</div><div style="height:14px"></div></div>';
+  }
+
+  document.getElementById('add').onclick=function(){
+    var ta=document.getElementById('in');
+    var list=ta.value.split(/[\n\r]+/).map(parseCode).filter(Boolean);
+    if(!list.length){ document.getElementById('msgs').innerHTML='<div class="status no" style="font-size:13px">Nothing to add.</div>'; return; }
+    var r=addRows(list);
+    if(r.bad===0) ta.value='';
+  };
+  document.getElementById('madd').onclick=function(){
+    var roll=document.getElementById('mroll').value.trim().toUpperCase();
+    var sc=+document.getElementById('mscore').value, tot=+document.getElementById('mtotal').value;
+    if(!roll||!(sc>=0)||!(tot>0)){ document.getElementById('msgs').innerHTML='<div class="status no" style="font-size:13px">Enter a roll number and a score.</div>'; return; }
+    if(sc>tot){ document.getElementById('msgs').innerHTML='<div class="status no" style="font-size:13px">Score cannot exceed the total.</div>'; return; }
+    addRows([{roll:roll,score:sc,total:tot,ok:true,manual:true,raw:'(manual)'}]);
+    document.getElementById('mroll').value=''; document.getElementById('mscore').value='';
+  };
+  document.getElementById('csv').onclick=function(){
+    if(!rows.length) return;
+    var out='roll,score,total,percent,source\n'+rows.map(function(r){
+      return [r.roll,r.score,r.total,(r.score/r.total*100).toFixed(1),r.manual?'manual':'code'].join(',');}).join('\n');
+    var a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(out);
+    a.download='pe-marks-'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  document.getElementById('clear').onclick=function(){
+    if(confirm('Clear the whole register? Download the CSV first if you have not.')){ rows=[]; save(); render();
+      document.getElementById('msgs').innerHTML=''; }
+  };
+  window.__marks={parseCode:parseCode,addRows:addRows,get:function(){return rows;},hash:hash};
+  render();
+})();
+</script>
+</body>
+</html>

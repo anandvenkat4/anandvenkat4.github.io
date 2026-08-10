@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M5 · Agents &amp; multilingual — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+<div class="facbar">INTERNAL — do not project the facilitator view to students</div>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Module 5 · Day 2 · 10:45–12:00 incl. Lab 6</div>
+    <h1>Agents — and what happens when a tool fails</h1>
+    <div class="goal">An agent is just <b>a model, some tools, and a loop</b>. The prompt decides what it may use and when to stop. Everything interesting is in the failure modes.</div>
+  </div>
+  <div class="facnote" data-notes="m5"></div>
+
+  <div class="story reveal">
+    <div class="tag">Start here</div>
+    <h3>The demo that looks like a success</h3>
+    <p>You will see an agent answer a question about sales figures. It plans, it queries a database, it reasons, it answers. It looks flawless.</p>
+    <p style="margin-bottom:0">One of its tool calls failed halfway through. <b>Nothing in the final answer tells you that.</b> Step through it and find the moment.</p>
+  </div>
+
+  <div class="concept reveal">
+    <h3>The loop, in one line</h3>
+    <div class="pipe-anim">
+      <span class="hop">THOUGHT</span><span class="arw">▶</span><span class="hop">ACTION</span><span class="arw">▶</span>
+      <span class="hop">OBSERVATION</span><span class="arw">▶</span><span class="hop">THOUGHT</span><span class="arw">▶</span><span class="hop">ANSWER</span>
+    </div>
+    <p>This is <b>ReAct</b> — reason and act, interleaved (<i>Yao et al., 2022</i>). The model thinks, picks a tool, reads the result, thinks again. The prompt supplies the tool list, the format, and the stopping rule.</p>
+    <p style="margin-bottom:0">There is no magic in the word "agent". It is a while-loop with a language model inside it.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">step through</span> A ReAct trace — watch step 6</div>
+    <div class="sbbody" id="react"></div>
+  </div>
+
+  <div class="check" data-check="pe-cc4" data-answer="B">
+    <div class="q">Concept check 1 — The SQL tool timed out. What did the agent do, and why is it dangerous?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. It stopped and reported the error <span class="why">It did not — it kept going.</span></button>
+    <button class="opt" data-opt="B">B. It substituted a plausible guess and presented it as fact <span class="why">Correct. The failure was silent: the final answer mixes one real number with one invented one, and reads with equal confidence. A user has no way to tell them apart.</span></button>
+    <button class="opt" data-opt="C">C. It retried the query <span class="why">A retry would have been reasonable. It did not.</span></button>
+    <button class="opt" data-opt="D">D. It looped forever <span class="why">A different failure mode — real, but not this one.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>The defence: make failure loud</h3>
+    <div class="terms">
+      <div class="term"><b>Say what to do when a tool fails</b>"If a tool returns an error, say so explicitly and do not estimate the value." One sentence, most of the fix.</div>
+      <div class="term"><b>Cap the steps</b>An unbounded loop is an unbounded bill.</div>
+      <div class="term"><b>Log every step</b>If you cannot see the trace, you cannot debug or defend it.</div>
+      <div class="term"><b>Validate tool calls</b>Never execute a tool call the model invented that is not on the allowed list.</div>
+    </div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>When should it use a tool at all?</h3>
+    <p>Beginners give agents too many tools and too much freedom. Half the skill is knowing when <b>not</b> to call one.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">decide</span> Tool, or no tool?</div>
+    <div class="sbbody" id="tool"></div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Step caps are a budget decision</h3>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">drag it</span> What a runaway loop costs</div>
+    <div class="sbbody" id="cap"></div>
+  </div>
+
+  <div class="check" data-check="pe-cc5" data-answer="C">
+    <div class="q">Concept check 2 — Your agent has a calculator, a search tool and a database. A user asks "summarise this paragraph I pasted". What should happen?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Search for the paragraph <span class="why">It is already in context. Searching adds latency and a chance of retrieving something wrong.</span></button>
+    <button class="opt" data-opt="B">B. Store it in the database first <span class="why">Nothing needs persisting to answer.</span></button>
+    <button class="opt" data-opt="C">C. Answer directly, with no tool call <span class="why">Correct. The information is present and summarising is a core capability. Every unnecessary tool call is latency, cost and one more chance to fail.</span></button>
+    <button class="opt" data-opt="D">D. Use the calculator to count words <span class="why">Fun, but not what was asked.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Multilingual prompting — quality is not uniform</h3>
+    <p>The same model is not equally good in every language: training data is overwhelmingly English. Watch the quality drop, and then watch <b>one sentence of instruction recover most of it</b>.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">compare</span> The same task in four settings</div>
+    <div class="sbbody" id="lang"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Code-switching</b>The model drifts back to English mid-answer, especially for technical terms. Name the behaviour and forbid it explicitly.</div>
+      <div class="term"><b>Longer output degrades faster</b>A one-line answer may be perfect while a paragraph falls apart.</div>
+      <div class="term"><b>Small local models are worse</b>Expect a bigger gap on <code>llama3.2</code> than on a hosted frontier model — worth demonstrating in the lab.</div>
+      <div class="term"><b>Evaluate in the target language</b>An English test set tells you nothing about Tamil quality.</div>
+    </div>
+  </div>
+
+  <div class="lab reveal">
+    <div class="k">Lab 6 · 45 minutes</div>
+    <h3>Build one agent loop, or one language comparison</h3>
+    <p>Pick <b>one</b>. Both produce a documented artefact for your capstone.</p>
+    <ul>
+      <li><b>Agent path:</b> one tool, a hard step cap, and an explicit rule for what to do when the tool fails. <b>Done =</b> a logged trace that reaches an answer, including one deliberate tool failure you handled.</li>
+      <li><b>Language path:</b> the same task in two languages, before and after an explicit language instruction. <b>Done =</b> four outputs and a short quality note.</li>
+      <li><b>Break it:</b> remove the step cap and see how far it goes before you stop it.</li>
+    </ul>
+  </div>
+
+  <div class="pager">
+    <a href="module-3-advanced-reasoning.html"><small>Previous</small><b>← M3</b></a>
+    <a class="next" href="module-6a-rag.html"><small>Next</small><b>M6a · RAG →</b></a>
+  </div>
+</main>
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a> · <a href="../course/">Course page</a></div></footer>
+<script src="assets/script-data.js?v=pe1"></script>
+<script src="assets/pe-playground.js?v=pe1"></script>
+<script src="assets/site.js?v=pe1"></script>
+<script>PEPG.reactLoop('react');PEPG.toolChoice('tool');PEPG.stepCap('cap');PEPG.langDrift('lang');</script>
+</body>
+</html>

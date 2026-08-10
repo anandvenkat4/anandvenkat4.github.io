@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Workbook — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+
+<main class="wrap" style="max-width:720px">
+  <div class="mhead"><div class="k">My workbook</div><h1 id="hi">Your progress</h1>
+    <div class="goal">Everything saved in this browser. At the end, generate your submit code and hand it in.</div></div>
+
+  <div id="notin" class="card" style="display:none"><p>You're not signed in yet.</p><a class="btn" href="login.html">Sign in →</a></div>
+
+  <div id="body" style="display:none">
+    <div class="grid g3">
+      <div class="card"><h3 id="cN">0 / 9</h3><p>Concept checks correct</p></div>
+      <div class="card"><h3 id="lN">0 / 6</h3><p>Lab checkpoints done</p></div>
+      <div class="card"><h3 id="qN">—</h3><p>Quiz score</p></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Concept checks</h3>
+      <div id="checks" style="font-size:14px;color:var(--body)"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Lab checkpoints</h3>
+      <div id="labs" style="font-size:14px;color:var(--body)"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;border:2px solid var(--turq)">
+      <h3>Your submit code</h3>
+      <p style="color:var(--body);font-size:14px">Generate this at the end of Day 3 and hand it in (paste into the form / show a helper).</p>
+      <textarea id="code" readonly style="width:100%;height:70px;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:8px"></textarea>
+      <div class="launch">
+        <button class="btn turq" id="gen">Generate submit code</button>
+        <button class="btn" id="copy" style="background:#fff;color:var(--coral7);border:1px solid var(--coral)">Copy</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
+<script src="assets/site.js?v=pe1"></script>
+<script>
+  const s=MLW.studentGet(), w=MLW.wbGet();
+  if(!s){document.getElementById('notin').style.display='block';}
+  else{
+    document.getElementById('body').style.display='block';
+    document.getElementById('hi').textContent=(s.name||'You')+' · '+(s.roll||'');
+    const cks=Object.keys(w).filter(k=>k.startsWith('check:'));
+    const cok=cks.filter(k=>w[k]&&w[k].correct).length;
+    const labs=Object.keys(w).filter(k=>k.startsWith('lab:')&&w[k]);
+    document.getElementById('cN').textContent=cok+' / 9';
+    document.getElementById('lN').textContent=labs.length+' / 6';
+    document.getElementById('qN').textContent=w.quiz?(w.quiz.score+' / '+w.quiz.total):'—';
+    document.getElementById('checks').innerHTML=cks.length?cks.map(k=>`${k.slice(6)}: ${w[k].correct?'<span class="pill g">correct</span>':'<span class="pill r">retry</span>'}`).join(' &nbsp; '):'No checks yet — work through the modules.';
+    document.getElementById('labs').innerHTML=labs.length?labs.map(k=>`<span class="pill g">${k.slice(4)} ✓</span>`).join(' '):'No labs marked done yet.';
+    document.getElementById('gen').addEventListener('click',()=>{document.getElementById('code').value=MLW.submitCode();});
+    document.getElementById('copy').addEventListener('click',()=>{const t=document.getElementById('code');t.select();document.execCommand&&document.execCommand('copy');});
+  }
+</script>
+</body>
+</html>

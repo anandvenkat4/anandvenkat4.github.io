@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice zone — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+<style>
+  .expl{background:var(--tsoft);border-left:3px solid var(--turq);border-radius:0 8px 8px 0;
+    padding:10px 13px;margin-top:9px;font-size:13.5px;color:var(--ink)}
+  .qcard.right{border-left:4px solid var(--turq)}
+  .qcard.wrong{border-left:4px solid var(--coral)}
+</style>
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Practice zone · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+</div></header>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Afternoon session 1 · untimed · unmarked</div>
+    <h1>Practice zone</h1>
+    <div class="goal">No clock, no marks, no sign-in. Answer, get it wrong, read why, try again. <b>Nothing here is recorded.</b> These are <b>not</b> the exam questions — they cover the same ideas so you can find your gaps before it counts.</div>
+  </div>
+
+  <div class="story">
+    <div class="tag">How to use this hour</div>
+    <p>Work with your pair. When you get one wrong, <b>read the explanation and say it back in your own words</b> before moving on — that is the bit that makes it stick.</p>
+    <p style="margin-bottom:0">Anything still confusing after the explanation is exactly what to ask about before the graded paper.</p>
+  </div>
+
+  <div class="sbctrls" style="margin:14px 0">
+    <span class="pill" id="score">0 attempted</span>
+    <button class="btn sm ghost" id="reset">Clear my answers</button>
+    <button class="btn sm ghost" id="shuffle">Shuffle order</button>
+  </div>
+
+  <div id="qs"></div>
+
+  <div class="concept" style="text-align:center">
+    <h3 id="final">Work through as many as you like</h3>
+    <p style="color:var(--muted);margin:0">When the graded evaluation opens, your instructor will give you an access code.</p>
+    <p style="margin:12px 0 0"><a class="btn turq" href="exam.html">Go to the graded evaluation →</a></p>
+  </div>
+</main>
+
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
+<script src="assets/pe-practice-data.js?v=pe1"></script>
+<script>
+(function(){
+  'use strict';
+  var KEY='pe_practice_v1';
+  var st={}; try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){st={}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').replace(/["'.,]/g,'').trim();}
+  var order=PRACTICE.map(function(_,i){return i;});
+
+  function correct(q,ans){
+    if(ans==null) return false;
+    if(q.t==='mcq'||q.t==='bug') return ans===q.a;
+    if(q.t==='multi') return ans.slice().sort().join(',')===q.a.slice().sort().join(',');
+    if(q.t==='fill') return q.accept.some(function(x){return norm(x)===norm(ans);});
+    if(q.t==='match') return q.pairs.every(function(_,i){return ans[i]===i;});
+    if(q.t==='order'||q.t==='build') return q.items.every(function(_,i){return ans[i]===i;});
+    return false;
+  }
+
+  function render(){
+    var wrap=document.getElementById('qs'); wrap.innerHTML='';
+    order.forEach(function(idx,pos){ wrap.appendChild(card(PRACTICE[idx],pos)); });
+    tally();
+  }
+  function tally(){
+    var att=0,ok=0;
+    PRACTICE.forEach(function(q){ if(st[q.id]&&st[q.id].done){att++; if(st[q.id].ok)ok++;} });
+    document.getElementById('score').textContent=att?(ok+' / '+att+' correct'):'0 attempted';
+    document.getElementById('final').textContent=att>=PRACTICE.length
+      ? 'You have attempted all '+PRACTICE.length+' — '+ok+' correct'
+      : 'Work through as many as you like';
+  }
+
+  function card(q,pos){
+    var d=document.createElement('div'); d.className='qcard'; d.id='p-'+q.id;
+    var prev=st[q.id]||{};
+    var L=['A','B','C','D','E'];
+    var body='';
+    if(q.t==='mcq'||q.t==='multi'){
+      body=q.o.map(function(o,j){return '<button class="btn ghost sm opt" data-j="'+j+'" style="display:block;width:100%;text-align:left;margin:5px 0">'+L[j]+'. '+esc(o)+'</button>';}).join('');
+      if(q.t==='multi') body+='<div style="font-size:12px;color:var(--muted)">Select all that apply, then press Check.</div>';
+    } else if(q.t==='bug'){
+      body='<div style="font-family:var(--mono);font-size:12.5px">'+q.lines.map(function(l,j){
+        return '<button class="btn ghost sm opt" data-j="'+j+'" style="display:block;width:100%;text-align:left;margin:2px 0;font-family:inherit">'+esc(l)+'</button>';}).join('')+'</div>';
+    } else if(q.t==='fill'){
+      body='<input class="fillin" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13px" placeholder="type your answer">'+
+        (q.hint?'<div style="font-size:12px;color:var(--muted);margin-top:5px">Hint: '+esc(q.hint)+'</div>':'');
+    } else if(q.t==='match'){
+      var rights=q.pairs.map(function(p,j){return {t:p[1],j:j};}).sort(function(){return Math.random()-0.5;});
+      body=q.pairs.map(function(p,j){
+        return '<div style="display:flex;gap:9px;align-items:center;margin:6px 0;flex-wrap:wrap">'+
+          '<b style="min-width:150px">'+esc(p[0])+'</b><select class="msel" data-left="'+j+'" style="flex:1;min-width:220px;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px">'+
+          '<option value="">— choose —</option>'+rights.map(function(r){return '<option value="'+r.j+'">'+esc(r.t)+'</option>';}).join('')+'</select></div>';}).join('');
+    } else {
+      body='<div class="slotrow" data-slot="1"><span class="ph">click chips in order</span></div>'+
+        '<div class="chipwrap" data-pool="1">'+q.items.map(function(t,j){return '<button class="chipx" data-j="'+j+'">'+esc(t)+'</button>';})
+          .sort(function(){return Math.random()-0.5;}).join('')+'</div>'+
+        '<button class="btn ghost sm" data-clear="1" style="margin-top:6px">Clear</button>';
+    }
+    d.innerHTML='<span class="marks">'+q.marks+' mark'+(q.marks>1?'s':'')+' · '+q.m+'</span>'+
+      '<div class="qn">Practice '+(pos+1)+' · '+q.t.toUpperCase()+'</div>'+
+      '<div class="qt">'+esc(q.q)+'</div>'+body+
+      '<div class="sbctrls" style="margin-top:9px"><button class="btn sm turq" data-check="1">Check</button>'+
+      '<button class="btn sm ghost" data-again="1">Try again</button></div><div data-fb="1"></div>';
+    wire(d,q);
+    if(prev.done) show(d,q,prev.ok);
+    return d;
+  }
+
+  function wire(d,q){
+    var cur=(st[q.id]||{}).ans;
+    if(q.t==='mcq'||q.t==='bug'){
+      var opts=[].slice.call(d.querySelectorAll('.opt'));
+      opts.forEach(function(b){ if(cur===+b.dataset.j)b.classList.add('turq');
+        b.onclick=function(){opts.forEach(function(x){x.classList.remove('turq');});b.classList.add('turq');
+          st[q.id]=st[q.id]||{}; st[q.id].ans=+b.dataset.j; save();};});
+    } else if(q.t==='multi'){
+      var sel=Array.isArray(cur)?cur.slice():[];
+      [].slice.call(d.querySelectorAll('.opt')).forEach(function(b){
+        var j=+b.dataset.j; if(sel.indexOf(j)>=0)b.classList.add('turq');
+        b.onclick=function(){var k=sel.indexOf(j);
+          if(k>=0){sel.splice(k,1);b.classList.remove('turq');}else{sel.push(j);b.classList.add('turq');}
+          st[q.id]=st[q.id]||{}; st[q.id].ans=sel.slice(); save();};});
+    } else if(q.t==='fill'){
+      var inp=d.querySelector('.fillin'); if(typeof cur==='string')inp.value=cur;
+      inp.oninput=function(){st[q.id]=st[q.id]||{};st[q.id].ans=inp.value;save();};
+    } else if(q.t==='match'){
+      var m=(cur&&typeof cur==='object')?cur:{};
+      [].slice.call(d.querySelectorAll('.msel')).forEach(function(s){
+        var li=+s.dataset.left; if(m[li]!=null)s.value=String(m[li]);
+        s.onchange=function(){ if(s.value==='')delete m[li]; else m[li]=+s.value;
+          st[q.id]=st[q.id]||{}; st[q.id].ans=m; save();};});
+    } else {
+      var slot=d.querySelector('[data-slot]'),pool=d.querySelector('[data-pool]');
+      var ord=Array.isArray(cur)?cur.slice():[];
+      function paint(){
+        slot.innerHTML=ord.length?ord.map(function(j,k){return '<span class="chipx on">'+(k+1)+'. '+esc(q.items[j])+'</span>';}).join('')
+          :'<span class="ph">click chips in order</span>';
+        [].slice.call(pool.querySelectorAll('.chipx')).forEach(function(c){c.style.display=ord.indexOf(+c.dataset.j)>=0?'none':'';});
+      }
+      [].slice.call(pool.querySelectorAll('.chipx')).forEach(function(c){
+        c.onclick=function(){var j=+c.dataset.j; if(ord.indexOf(j)<0){ord.push(j);
+          st[q.id]=st[q.id]||{}; st[q.id].ans=ord.slice(); save(); paint();}};});
+      d.querySelector('[data-clear]').onclick=function(){ord=[];st[q.id]=st[q.id]||{};st[q.id].ans=null;save();paint();};
+      paint();
+    }
+    d.querySelector('[data-check]').onclick=function(){
+      var ans=(st[q.id]||{}).ans;
+      if(ans==null||(Array.isArray(ans)&&!ans.length)||(typeof ans==='string'&&!ans.trim())){
+        d.querySelector('[data-fb]').innerHTML='<div class="status no" style="font-size:13px">Have a go first — a wrong answer is more useful than a blank one.</div>';return;}
+      var ok=correct(q,ans);
+      st[q.id].done=true; st[q.id].ok=ok; save(); show(d,q,ok); tally();
+    };
+    d.querySelector('[data-again]').onclick=function(){
+      st[q.id]={}; save();
+      var fresh=card(q,order.indexOf(PRACTICE.indexOf(q)));
+      d.parentNode.replaceChild(fresh,d); tally();
+    };
+  }
+
+  function show(d,q,ok){
+    d.classList.remove('right','wrong'); d.classList.add(ok?'right':'wrong');
+    var L=['A','B','C','D','E'];
+    var right='';
+    if(q.t==='mcq') right='Correct answer: <b>'+L[q.a]+'. '+esc(q.o[q.a])+'</b>';
+    else if(q.t==='multi') right='Correct: <b>'+q.a.map(function(i){return L[i];}).join(', ')+'</b>';
+    else if(q.t==='bug') right='The faulty line is <b>line '+(q.a+1)+'</b>: <code>'+esc(q.lines[q.a])+'</code>';
+    else if(q.t==='fill') right='Accepted answer: <b>'+esc(q.accept[0])+'</b>';
+    else if(q.t==='match') right='Correct pairing: '+q.pairs.map(function(p){return '<b>'+esc(p[0])+'</b> → '+esc(p[1]);}).join(' · ');
+    else right='Correct order: '+q.items.map(function(t,i){return (i+1)+'. '+esc(t);}).join('  ');
+    d.querySelector('[data-fb]').innerHTML=
+      '<div class="status '+(ok?'ok':'no')+'" style="font-size:14px;margin-top:8px">'+(ok?'✓ Correct':'✗ Not quite')+'</div>'+
+      '<div class="expl">'+right+'<br><br>'+esc(q.e)+'</div>';
+  }
+
+  document.getElementById('reset').onclick=function(){
+    if(confirm('Clear all your practice answers?')){ st={}; save(); render(); }};
+  document.getElementById('shuffle').onclick=function(){
+    order=order.slice().sort(function(){return Math.random()-0.5;}); render(); window.scrollTo(0,0);};
+  window.__practice={correct:correct,state:function(){return st;}};
+  render();
+})();
+</script>
+</body>
+</html>

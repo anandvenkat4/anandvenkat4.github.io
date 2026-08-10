@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Final Evaluation — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Final Evaluation · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="practice.html">Practice</a>
+</div></header>
+
+<main class="wrap" id="root"></main>
+
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
+
+<script src="assets/pe-exam-data.js?v=pe1"></script>
+<script>
+(function(){
+  'use strict';
+  var KEY='pe_exam_v1';
+  /* Access code is stored as a one-way hash so it is not readable in source.
+     TO CHANGE THE CODE: open the browser console on this page, run
+         __mkcode('YOUR-NEW-CODE')
+     and paste the result over CODE_HASH below. */
+  var CODE_HASH='ywd06f';                     // current code: TCE-PROMPT-2026
+  function hash(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return (x>>>0).toString(36);}
+  window.__mkcode=hash;
+
+  var TOTAL=EXAM.reduce(function(n,q){return n+q.marks;},0);
+  var LIMIT=EXAM_META.minutes*60*1000;
+  var root=document.getElementById('root');
+  var st=load(), tick=null;
+
+  function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fmt(ms){ms=Math.max(0,ms);var t=Math.floor(ms/1000),m=Math.floor(t/60),s=t%60;
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
+  function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').replace(/["']/g,'').trim();}
+  function remaining(){return LIMIT-(st.elapsedMs||0);}
+
+  /* ══════════════ SCORING ══════════════ */
+  function scoreOne(q,ans){
+    if(ans==null) return 0;
+    if(q.t==='mcq'||q.t==='bug') return ans===q.a?q.marks:0;
+    if(q.t==='multi'){
+      var a=(ans||[]).slice().sort().join(','), b=q.a.slice().sort().join(',');
+      return a===b?q.marks:0;
+    }
+    if(q.t==='fill') return q.accept.some(function(x){return norm(x)===norm(ans);})?q.marks:0;
+    if(q.t==='match'){
+      var got=0; q.pairs.forEach(function(p,i){ if(ans[i]===i) got++; });
+      return got;                                  // 1 mark per correct pair
+    }
+    if(q.t==='order'||q.t==='build'){
+      var n=0; (ans||[]).forEach(function(v,i){ if(v===i) n++; });
+      return Math.floor(n/q.items.length*q.marks);
+    }
+    return 0;
+  }
+  function scoreAll(){
+    var got=0, per={};
+    EXAM.forEach(function(q){ var s=scoreOne(q,st.answers[q.id]); got+=s;
+      per[q.m]=per[q.m]||{got:0,max:0}; per[q.m].got+=s; per[q.m].max+=q.marks; });
+    return {got:got,per:per};
+  }
+
+  /* ══════════════ SCREENS ══════════════ */
+  function gate(msg){
+    root.innerHTML=
+     '<div class="mhead"><div class="k">Final evaluation · '+EXAM_META.minutes+' minutes · '+TOTAL+' marks</div>'+
+     '<h1>Sign in to begin</h1>'+
+     '<div class="goal">Enter your roll number and the access code given by the instructor. '+
+     '<b>Your timer starts the moment you sign in.</b></div></div>'+
+     '<div class="concept" style="max-width:520px">'+
+       (msg?'<div class="status no" style="margin-bottom:10px">'+esc(msg)+'</div>':'')+
+       '<label style="display:block;font-weight:700;margin-bottom:4px">Roll number</label>'+
+       '<input id="roll" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:12px" autocomplete="off">'+
+       '<label style="display:block;font-weight:700;margin-bottom:4px">Access code</label>'+
+       '<input id="code" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:14px" autocomplete="off">'+
+       '<button class="btn turq" id="go">Start the evaluation</button>'+
+     '</div>'+
+     '<div class="story" style="margin-top:18px"><div class="tag">Before you start</div>'+
+     '<ul style="margin:0"><li>You have <b>'+EXAM_META.minutes+' minutes</b>. The clock only runs while this page is open.</li>'+
+     '<li>If you close the tab by accident, sign in again — you <b>resume with the time you had left</b>.</li>'+
+     '<li>Answers save automatically as you go.</li>'+
+     '<li><b>Submitting is final.</b> You cannot reopen the paper afterwards.</li>'+
+     '<li>Multi-select questions are marked all-or-nothing. Matching gives a mark per correct pair.</li></ul></div>';
+    document.getElementById('go').onclick=function(){
+      var r=document.getElementById('roll').value.trim();
+      var c=document.getElementById('code').value.trim();
+      if(!r) return gate('Enter your roll number.');
+      if(hash(c)!==CODE_HASH) return gate('That access code is not correct. Check with the instructor.');
+      st={roll:r,startedAt:Date.now(),elapsedMs:0,answers:{},submitted:false};
+      save(); exam();
+    };
+    document.getElementById('code').onkeydown=function(e){if(e.key==='Enter')document.getElementById('go').click();};
+  }
+
+  function locked(){
+    var s=st.score, pct=Math.round(s/TOTAL*100);
+    root.innerHTML='<div class="locked"><h1 style="margin-top:0">Submitted</h1>'+
+      '<p>Roll number <b>'+esc(st.roll)+'</b></p>'+
+      '<div style="font-size:44px;font-weight:800;color:var(--coral);line-height:1.1">'+s+' / '+TOTAL+'</div>'+
+      '<div style="font-weight:700;color:var(--muted);margin-bottom:6px">'+pct+'%</div>'+
+      '<p>Show this code to your instructor:</p><div class="code">'+esc(st.submitCode)+'</div>'+
+      '<p style="color:var(--muted);font-size:13px;margin-bottom:0">This paper is closed and cannot be reopened.</p></div>';
+  }
+
+  function results(){
+    var r=scoreAll(), pct=Math.round(r.got/TOTAL*100);
+    var rows=Object.keys(r.per).map(function(m){
+      var p=r.per[m]; return '<tr><td style="padding:7px 10px;border-top:1px solid var(--line)"><b>'+m+'</b></td>'+
+        '<td style="padding:7px 10px;border-top:1px solid var(--line)">'+p.got+' / '+p.max+'</td>'+
+        '<td style="padding:7px 10px;border-top:1px solid var(--line)">'+Math.round(p.got/p.max*100)+'%</td></tr>';}).join('');
+    root.innerHTML='<div class="mhead"><div class="k">Submitted · roll '+esc(st.roll)+'</div>'+
+      '<h1>'+r.got+' / '+TOTAL+'  ·  '+pct+'%</h1>'+
+      '<div class="goal">'+(pct>=EXAM_META.pass?'Comfortably through. ':'Below the '+EXAM_META.pass+'% mark. ')+
+      'Show the code below to your instructor.</div></div>'+
+      '<div class="concept"><h3>Show this to the instructor</h3><div class="code">'+esc(st.submitCode)+'</div></div>'+
+      '<div class="concept"><h3>By module</h3><table style="width:100%;border-collapse:collapse">'+
+      '<tr><th style="text-align:left;padding:7px 10px">Module</th><th style="text-align:left;padding:7px 10px">Marks</th><th style="text-align:left;padding:7px 10px">%</th></tr>'+
+      rows+'</table></div>'+
+      '<div class="story"><div class="tag">Done</div><p style="margin-bottom:0">Your paper is closed. Reopening this page will only show your result.</p></div>';
+  }
+
+  /* ══════════════ EXAM ══════════════ */
+  function exam(){
+    var done=EXAM.filter(function(q){return st.answers[q.id]!=null;}).length;
+    root.innerHTML=
+      '<div class="exbar"><span class="clk" id="clk">'+fmt(remaining())+'</span>'+
+      '<span style="font-size:12px;opacity:.85">left</span>'+
+      '<span class="pill" id="cnt">'+done+' / '+EXAM.length+' answered</span>'+
+      '<span class="sp"></span><span style="font-size:12px;opacity:.85">Roll '+esc(st.roll)+'</span>'+
+      '<button class="btn sm turq" id="sub">Submit paper</button></div>'+
+      '<div class="mhead"><div class="k">'+TOTAL+' marks · answers save as you go</div>'+
+      '<h1>Final evaluation</h1></div>'+
+      '<div class="exnav" id="nav"></div><div id="qs"></div>'+
+      '<div class="concept" style="text-align:center"><button class="btn turq" id="sub2">Submit paper</button>'+
+      '<p style="color:var(--muted);font-size:13px;margin:9px 0 0">Submitting is final.</p></div>';
+    var qs=document.getElementById('qs');
+    EXAM.forEach(function(q,i){ qs.appendChild(renderQ(q,i)); });
+    document.getElementById('sub').onclick=confirmSubmit;
+    document.getElementById('sub2').onclick=confirmSubmit;
+    refresh(); startClock();
+  }
+
+  function refresh(){
+    var done=0;
+    EXAM.forEach(function(q){ if(st.answers[q.id]!=null) done++; });
+    var c=document.getElementById('cnt'); if(c)c.textContent=done+' / '+EXAM.length+' answered';
+    var nav=document.getElementById('nav');
+    if(nav) nav.innerHTML=EXAM.map(function(q,i){
+      return '<a href="#'+q.id+'" class="'+(st.answers[q.id]!=null?'done':'')+'">'+(i+1)+'</a>';}).join('');
+    EXAM.forEach(function(q){ var el=document.getElementById(q.id);
+      if(el){ if(st.answers[q.id]!=null) el.classList.add('answered'); else el.classList.remove('answered'); } });
+  }
+
+  function renderQ(q,i){
+    var d=document.createElement('div'); d.className='qcard'; d.id=q.id;
+    var head='<span class="marks">'+q.marks+' mark'+(q.marks>1?'s':'')+' · '+q.m+'</span>'+
+             '<div class="qn">Question '+(i+1)+' · '+q.t.toUpperCase()+'</div>'+
+             '<div class="qt">'+esc(q.q)+'</div>';
+    var body='';
+    var L=['A','B','C','D','E','F'];
+
+    if(q.t==='mcq'||q.t==='multi'){
+      body=q.o.map(function(o,j){return '<button class="btn ghost sm opt" data-j="'+j+'" '+
+        'style="display:block;width:100%;text-align:left;margin:5px 0">'+L[j]+'. '+esc(o)+'</button>';}).join('');
+      if(q.t==='multi') body+='<div style="font-size:12px;color:var(--muted);margin-top:4px">Select all that apply.</div>';
+    }
+    else if(q.t==='bug'){
+      body='<div style="font-family:ui-monospace,Menlo,monospace;font-size:13px">'+
+        q.lines.map(function(l,j){return '<button class="btn ghost sm opt" data-j="'+j+'" '+
+        'style="display:block;width:100%;text-align:left;margin:2px 0;font-family:inherit">'+esc(l)+'</button>';}).join('')+'</div>';
+    }
+    else if(q.t==='fill'){
+      body='<input class="fillin" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);'+
+        'border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:13px" autocomplete="off" '+
+        'placeholder="type the command">'+
+        (q.hint?'<div style="font-size:12px;color:var(--muted);margin-top:5px">Hint: '+esc(q.hint)+'</div>':'');
+    }
+    else if(q.t==='match'){
+      var rights=q.pairs.map(function(p,j){return {t:p[1],j:j};});
+      rights.sort(function(){return Math.random()-0.5;});
+      body='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">One mark per correct pair.</div>'+
+        q.pairs.map(function(p,j){
+          return '<div style="display:flex;gap:9px;align-items:center;margin:6px 0;flex-wrap:wrap">'+
+            '<b style="min-width:140px">'+esc(p[0])+'</b>'+
+            '<select class="msel" data-left="'+j+'" style="flex:1;min-width:200px;padding:7px 9px;'+
+            'border:1.5px solid var(--line);border-radius:8px"><option value="">— choose —</option>'+
+            rights.map(function(r){return '<option value="'+r.j+'">'+esc(r.t)+'</option>';}).join('')+
+            '</select></div>';}).join('');
+    }
+    else if(q.t==='order'||q.t==='build'){
+      body='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+
+        (q.t==='build'?'Click chips in the right order to build the pipeline.':'Click in the correct order.')+
+        ' Partial credit for partly-correct order.</div>'+
+        '<div class="slotrow" data-slot="1"><span class="ph">your order appears here</span></div>'+
+        '<div class="chipwrap" data-pool="1">'+
+        q.items.map(function(t,j){return '<button class="chipx" data-j="'+j+'">'+esc(t)+'</button>';})
+          .sort(function(){return Math.random()-0.5;}).join('')+'</div>'+
+        '<button class="btn ghost sm" data-clear="1" style="margin-top:6px">Clear</button>';
+    }
+    d.innerHTML=head+body;
+    wire(d,q);
+    return d;
+  }
+
+  function wire(d,q){
+    var saved=st.answers[q.id];
+
+    if(q.t==='mcq'||q.t==='bug'){
+      var opts=[].slice.call(d.querySelectorAll('.opt'));
+      opts.forEach(function(b){
+        if(saved===+b.dataset.j) b.classList.add('turq');
+        b.onclick=function(){ opts.forEach(function(x){x.classList.remove('turq');});
+          b.classList.add('turq'); st.answers[q.id]=+b.dataset.j; save(); refresh(); };
+      });
+    }
+    else if(q.t==='multi'){
+      var sel=Array.isArray(saved)?saved.slice():[];
+      var opts2=[].slice.call(d.querySelectorAll('.opt'));
+      opts2.forEach(function(b){
+        var j=+b.dataset.j;
+        if(sel.indexOf(j)>=0) b.classList.add('turq');
+        b.onclick=function(){
+          var k=sel.indexOf(j);
+          if(k>=0){sel.splice(k,1);b.classList.remove('turq');} else {sel.push(j);b.classList.add('turq');}
+          st.answers[q.id]=sel.length?sel.slice():null; save(); refresh(); };
+      });
+    }
+    else if(q.t==='fill'){
+      var inp=d.querySelector('.fillin');
+      if(typeof saved==='string') inp.value=saved;
+      inp.oninput=function(){ st.answers[q.id]=inp.value.trim()||null; save(); refresh(); };
+    }
+    else if(q.t==='match'){
+      var cur=saved&&typeof saved==='object'?saved:{};
+      [].slice.call(d.querySelectorAll('.msel')).forEach(function(s){
+        var li=+s.dataset.left;
+        if(cur[li]!=null) s.value=String(cur[li]);
+        s.onchange=function(){
+          if(s.value==='') delete cur[li]; else cur[li]=+s.value;
+          st.answers[q.id]=Object.keys(cur).length?cur:null; save(); refresh(); };
+      });
+    }
+    else if(q.t==='order'||q.t==='build'){
+      var slot=d.querySelector('[data-slot]'), pool=d.querySelector('[data-pool]');
+      var order=Array.isArray(saved)?saved.slice():[];
+      function paint(){
+        if(!order.length) slot.innerHTML='<span class="ph">your order appears here</span>';
+        else slot.innerHTML=order.map(function(j,k){
+          return '<span class="chipx on">'+(k+1)+'. '+esc(q.items[j])+'</span>';}).join('');
+        [].slice.call(pool.querySelectorAll('.chipx')).forEach(function(c){
+          c.style.display = order.indexOf(+c.dataset.j)>=0 ? 'none' : '';});
+      }
+      [].slice.call(pool.querySelectorAll('.chipx')).forEach(function(c){
+        c.onclick=function(){ var j=+c.dataset.j;
+          if(order.indexOf(j)<0){ order.push(j);
+            st.answers[q.id]=order.length?order.slice():null; save(); paint(); refresh(); } };
+      });
+      d.querySelector('[data-clear]').onclick=function(){
+        order=[]; st.answers[q.id]=null; save(); paint(); refresh(); };
+      paint();
+    }
+  }
+
+  /* ══════════════ CLOCK ══════════════ */
+  function startClock(){
+    var last=Date.now();
+    if(tick) clearInterval(tick);
+    tick=setInterval(function(){
+      var now=Date.now(); st.elapsedMs=(st.elapsedMs||0)+(now-last); last=now;
+      var rem=remaining(), el=document.getElementById('clk');
+      if(el){ el.textContent=fmt(rem);
+        el.className='clk'+(rem<5*60000?' crit':rem<15*60000?' warn':''); }
+      if(Math.floor(st.elapsedMs/5000)!==Math.floor((st.elapsedMs-1000)/5000)) save();
+      if(rem<=0){ clearInterval(tick); save(); doSubmit(true); }
+    },1000);
+    window.addEventListener('beforeunload',save);
+    document.addEventListener('visibilitychange',save);
+  }
+
+  function confirmSubmit(){
+    var un=EXAM.length-EXAM.filter(function(q){return st.answers[q.id]!=null;}).length;
+    var msg=un?('You have '+un+' unanswered question'+(un>1?'s':'')+'.\n\nSubmit anyway? This is final.')
+               :'Submit your paper? This is final and cannot be undone.';
+    if(confirm(msg)) doSubmit(false);
+  }
+
+  function doSubmit(auto){
+    if(tick) clearInterval(tick);
+    var r=scoreAll();
+    st.submitted=true; st.score=r.got; st.total=TOTAL; st.submittedAt=Date.now();
+    st.submitCode=(st.roll+'-'+r.got+'-'+TOTAL+'-'+hash(st.roll+'|'+r.got+'|'+TOTAL)).toUpperCase();
+    save();
+    if(auto) alert('Time is up. Your paper has been submitted automatically.');
+    results();
+  }
+
+  /* ══════════════ ROUTER ══════════════ */
+  if(st&&st.submitted) locked();
+  else if(st&&st.roll) exam();
+  else gate('');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M6a · RAG — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe1">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+<div class="facbar">INTERNAL — do not project the facilitator view to students</div>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Module 6a · Day 2 · 13:30–14:45 incl. Lab 7</div>
+    <h1>RAG — stop the model inventing things</h1>
+    <div class="goal">This morning a model invented "Policy 4.2" and then <b>approved its own citation</b>. RAG is the practical fix: don't ask the model to remember — <b>hand it the text</b>.</div>
+  </div>
+  <div class="facnote" data-notes="m6a"></div>
+
+  <div class="story reveal">
+    <div class="tag">Start here · the callback</div>
+    <h3>You already saw why this matters</h3>
+    <p>In Module 3, self-critique produced a confident, well-written, <b>fabricated</b> policy reference — and then certified it as correct. No amount of clever prompting fixes that, because the model cannot check a fact it does not have.</p>
+    <p style="margin-bottom:0"><b>Retrieval-Augmented Generation</b> changes the question from "what do you remember?" to "what does this passage say?" — which a model is genuinely good at.</p>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Four stages, and only one involves the model</h3>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">step through</span> The RAG pipeline</div>
+    <div class="sbbody" id="rag"></div>
+  </div>
+
+  <div class="check" data-check="pe-cc6" data-answer="D">
+    <div class="q">Concept check 1 — Which stage does the most to prevent hallucination?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Retrieval — finding the right chunk <span class="why">Necessary, but retrieving good text does not stop the model ignoring it.</span></button>
+    <button class="opt" data-opt="B">B. The embedding model <span class="why">It affects what you find, not how faithfully the answer uses it.</span></button>
+    <button class="opt" data-opt="C">C. The size of the model <span class="why">A bigger model hallucinates more fluently, not less.</span></button>
+    <button class="opt" data-opt="D">D. The instruction to answer ONLY from the context <span class="why">Correct. Retrieval puts the truth in front of the model; the instruction is what stops it wandering off. Remove that sentence and a well-retrieved answer can still drift.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>The same question, three ways</h3>
+    <p>Watch what the instruction actually buys you.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">compare</span> No context → context → context + strict instruction</div>
+    <div class="sbbody" id="gv"></div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Chunking — the knob that quietly decides everything</h3>
+    <p>Documents are split before they are indexed. Chunk too small and answers get cut in half; too large and the relevant sentence drowns. Find the sweet spot yourself.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">drag it</span> Chunk size vs recall and precision</div>
+    <div class="sbbody" id="chunk"></div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Citations are only worth something if someone checks them</h3>
+    <p>Five claims, one short passage. Decide which are actually supported — this is exactly the review a human has to do, and exactly what Lab 7 asks you to automate.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">verify</span> Supported, or invented?</div>
+    <div class="sbbody" id="cite"></div>
+  </div>
+
+  <div class="check" data-check="pe-cc7" data-answer="B">
+    <div class="q">Concept check 2 — Your RAG app answers a question the documents do not cover. What SHOULD it do?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Answer from general knowledge <span class="why">This is the failure. The user assumes every answer is grounded, so an ungrounded one is worse than no answer.</span></button>
+    <button class="opt" data-opt="B">B. Say the context does not cover it <span class="why">Correct — and it only happens if your prompt explicitly tells it to. "If the context does not contain the answer, say so" is the most valuable sentence in a RAG prompt.</span></button>
+    <button class="opt" data-opt="C">C. Retrieve more chunks until something fits <span class="why">Retrieving irrelevant text and answering from it is worse, not better.</span></button>
+    <button class="opt" data-opt="D">D. Return an empty response <span class="why">Unhelpful, and users read silence as a bug.</span></button>
+  </div>
+
+  <div class="lab reveal">
+    <div class="k">Lab 7 · 45 minutes</div>
+    <h3>Build a tiny RAG over your own text</h3>
+    <ul>
+      <li>Take 3–5 short documents. Split them. Retrieve by keyword — no vector database needed.</li>
+      <li><b>Done =</b> five questions answered <b>with citations</b>, including <b>one question the documents cannot answer</b>, correctly refused.</li>
+      <li><b>Break it:</b> ask something adjacent but uncovered and see whether it refuses or drifts.</li>
+      <li><b>Stretch:</b> verify every claim against the source automatically.</li>
+    </ul>
+  </div>
+
+  <div class="pager">
+    <a href="module-5-agents-multilingual.html"><small>Previous</small><b>← M5</b></a>
+    <a class="next" href="module-6b-security-eval.html"><small>Next</small><b>M6b · Security →</b></a>
+  </div>
+</main>
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a> · <a href="../course/">Course page</a></div></footer>
+<script src="assets/script-data.js?v=pe1"></script>
+<script src="assets/pe-playground.js?v=pe1"></script>
+<script src="assets/site.js?v=pe1"></script>
+<script>PEPG.ragPipeline('rag');PEPG.groundedVs('gv');PEPG.chunkTuner('chunk');PEPG.citationCheck('cite');</script>
+</body>
+</html>
