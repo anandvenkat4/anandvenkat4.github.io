@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M1 · What a prompt is — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe2">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-1-what-is-a-prompt.html">M1</a>
+  <a class="navlink" href="module-2-text-techniques.html">M2</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+<div class="facbar">INTERNAL — do not project the facilitator view to students</div>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Module 1 · Day 1 · revision</div>
+    <h1>What a prompt actually is</h1>
+    <div class="goal">A prompt is not a question. It is <b>a specification</b> — and almost every "the model is bad" complaint turns out to be a specification you did not write.</div>
+  </div>
+  <div class="facnote" data-notes="m1"></div>
+
+  <div class="story reveal">
+    <div class="tag">Start here</div>
+    <h3>"Tell me about this claim."</h3>
+    <p>That prompt is grammatical, polite, and almost useless. The model has to guess what you want, what counts as relevant, how long to be, and what shape the answer should take. It will guess differently every time.</p>
+    <p style="margin-bottom:0">Below you can repair it one line at a time and watch the quality climb — <b>without ever changing the model.</b></p>
+  </div>
+
+  <div class="concept reveal">
+    <h3>The six parts of a working prompt</h3>
+    <p>Not every prompt needs all six, but when one misbehaves, the missing piece is almost always on this list. Click each line.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">click through</span> Anatomy of a prompt</div>
+    <div class="sbbody" id="anat"></div>
+  </div>
+
+  <div class="check" data-check="pe-m1c1" data-answer="B">
+    <div class="q">Concept check 1 — A prompt returns correct answers in three different formats across three runs. Which part is missing?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Role <span class="why">A persona does not pin the output shape.</span></button>
+    <button class="opt" data-opt="B">B. Format specification <span class="why">Correct. The answers were right; only the shape varied. State the exact output and the variation disappears.</span></button>
+    <button class="opt" data-opt="C">C. Context <span class="why">Context affects correctness, not formatting.</span></button>
+    <button class="opt" data-opt="D">D. A bigger model <span class="why">A bigger model formats inconsistently too, just more eloquently.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Repair it yourself</h3>
+    <p>Six fixes, applied in order. Watch where the gain actually comes from.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">step through</span> From vague to production-ready</div>
+    <div class="sbbody" id="repair"></div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Temperature — the dial people misunderstand</h3>
+    <p>Temperature does <b>not</b> control how clever or how accurate the model is. It controls how much randomness there is in choosing each next token.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">drag it</span> Three runs at each temperature</div>
+    <div class="sbbody" id="temp"></div>
+  </div>
+
+  <div class="check" data-check="pe-m1c2" data-answer="C">
+    <div class="q">Concept check 2 — You are extracting invoice fields into JSON for a database. What temperature?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. 0.9, for flexibility <span class="why">Flexibility is the enemy here. Your parser needs the same shape every time.</span></button>
+    <button class="opt" data-opt="B">B. 0.7, a balanced default <span class="why">Fine for prose; too loose for something you will parse.</span></button>
+    <button class="opt" data-opt="C">C. 0, or very close to it <span class="why">Correct. Extraction has one right answer and a fixed shape. Determinism is exactly what you want — and it makes your tests repeatable.</span></button>
+    <button class="opt" data-opt="D">D. Temperature has no effect on format <span class="why">It does — format drifts before accuracy does, which is what makes it sneaky.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Tokens — why every word in your prompt has a price</h3>
+    <p>Models read tokens, not words. Type into the box and watch the count and the cost at scale.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">try it</span> Token and cost estimator</div>
+    <div class="sbbody" id="tok"></div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>The context window, and the middle you should not trust</h3>
+    <p>Everything the model sees — your instructions, examples, documents, the conversation — shares one window. And <b>position matters</b>: a fact buried in the middle of a long context is measurably more likely to be ignored.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">drag it</span> Lost in the middle</div>
+    <div class="sbbody" id="ctx"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Instructions first or last</b>Never bury the task in the middle of a long pasted document.</div>
+      <div class="term"><b>A bigger window is not a filing cabinet</b>Fitting 40 pages in does not mean all 40 are used. Retrieve what matters instead — that is RAG, in M6a.</div>
+      <div class="term"><b>Non-English costs more</b>The same sentence in Tamil or Hindi uses noticeably more tokens than in English.</div>
+    </div>
+  </div>
+
+  <div class="story reveal">
+    <div class="tag">The idea to carry forward</div>
+    <h3>Nothing in this module required a better model</h3>
+    <p style="margin-bottom:0">Every gain came from being explicit — task, criteria, boundaries, format — and from choosing the right temperature. <b>Reach for clarity before you reach for anything clever.</b> The rest of the course is what to do when clarity genuinely is not enough.</p>
+  </div>
+
+  <div class="pager">
+    <a href="index.html"><small>Back</small><b>← Home</b></a>
+    <a class="next" href="module-2-text-techniques.html"><small>Next</small><b>M2 · Techniques →</b></a>
+  </div>
+</main>
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a> · <a href="../course/">Course page</a></div></footer>
+<script src="assets/script-data.js?v=pe2"></script>
+<script src="assets/pe-playground.js?v=pe2"></script>
+<script src="assets/site.js?v=pe2"></script>
+<script>PEPG.anatomy('anat');PEPG.promptRepair('repair');PEPG.tempDial('temp');PEPG.tokenizer('tok');PEPG.contextWindow('ctx');</script>
+</body>
+</html>

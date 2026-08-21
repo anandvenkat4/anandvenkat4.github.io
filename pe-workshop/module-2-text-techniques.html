@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M2 · Text-based techniques — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe2">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-1-what-is-a-prompt.html">M1</a>
+  <a class="navlink" href="module-2-text-techniques.html">M2</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+<div class="facbar">INTERNAL — do not project the facilitator view to students</div>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Module 2 · Day 1 · revision</div>
+    <h1>Text-based techniques — examples, boundaries, reasoning</h1>
+    <div class="goal">Four levers you will use constantly: <b>examples</b>, <b>delimiters</b>, <b>roles</b>, and <b>asking for reasoning</b>. Each has a job — and each is routinely used for the wrong one.</div>
+  </div>
+  <div class="facnote" data-notes="m2"></div>
+
+  <div class="story reveal">
+    <div class="tag">Start here · in-context learning</div>
+    <h3>The model learns from your prompt without learning anything</h3>
+    <p>Put two solved examples in a prompt and the model follows the pattern. Nothing was trained, no weights changed — the examples are simply <i>there</i>, in the context, being imitated. That is <b>in-context learning</b>, and it is the mechanism behind everything in this module.</p>
+    <p style="margin-bottom:0">Which also tells you its limit: <b>the pattern disappears the moment the prompt does.</b></p>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Zero → one → few → many</h3>
+    <p>Four runs of a sentiment task at each level. Watch what changes — and what stops changing.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">compare</span> How many examples do you actually need?</div>
+    <div class="sbbody" id="shots"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Examples fix format first</b>The biggest jump is zero → one, and it is mostly about <i>shape</i>. Remember this when you reach M3.</div>
+      <div class="term"><b>Cover your edge cases</b>Include a tricky or boundary example, not three easy ones. Examples teach the boundary, not the average.</div>
+      <div class="term"><b>Order matters a little</b>Models show mild recency bias — the last example carries slightly more weight. Do not stack all of one class at the end.</div>
+      <div class="term"><b>You pay on every call</b>Three examples are three examples' worth of tokens, forever. Diminishing returns arrive quickly.</div>
+    </div>
+  </div>
+
+  <div class="check" data-check="pe-m2c1" data-answer="C">
+    <div class="q">Concept check 1 — Going from 3 examples to 8 gave no improvement. What should you conclude?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. The model is too small <span class="why">It handled 3 examples fine — capability is not the constraint.</span></button>
+    <button class="opt" data-opt="B">B. You need 20 examples <span class="why">The curve has already flattened. More will cost tokens for nothing.</span></button>
+    <button class="opt" data-opt="C">C. You have hit diminishing returns — keep 3 and spend effort elsewhere <span class="why">Correct. Once format is stable, extra examples mostly add cost. If accuracy is still short, the problem is reasoning or context, not example count.</span></button>
+    <button class="opt" data-opt="D">D. Few-shot does not work <span class="why">It clearly did — it stabilised the format.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Delimiters — the habit that also happens to be a security control</h3>
+    <p>The model cannot tell your instructions from the user's text; it is one stream of tokens. Delimiters plus one sentence of hierarchy draw the line.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">toggle it</span> With and without a boundary</div>
+    <div class="sbbody" id="delim"></div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Roles — useful, and over-sold</h3>
+    <p>"You are an expert…" is the most copied line in prompting and one of the weakest. Compare four versions honestly.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">compare</span> Does the persona earn its tokens?</div>
+    <div class="sbbody" id="role"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Naming the audience beats naming the expert</b>"explaining to a first-year student" changed the answer far more than "you are a statistician".</div>
+      <div class="term"><b>Stacked credentials do nothing</b>"World-class, award-winning, expert" adds tokens and no capability. Flattery is not a parameter.</div>
+    </div>
+  </div>
+
+  <div class="check" data-check="pe-m2c2" data-answer="B">
+    <div class="q">Concept check 2 — Which change most improved the p-value explanation?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Calling the model a statistician <span class="why">A small, real gain — but not the largest.</span></button>
+    <button class="opt" data-opt="B">B. Naming who the answer is for <span class="why">Correct. Specifying the audience changed the vocabulary, the structure and the depth. "Who is reading this?" is usually a stronger lever than "who are you?"</span></button>
+    <button class="opt" data-opt="C">C. Adding "world-class" <span class="why">It slightly hurt, by adding tokens for nothing.</span></button>
+    <button class="opt" data-opt="D">D. Nothing changed <span class="why">Quality moved from 72% to 91%.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>"Think step by step" — and when not to</h3>
+    <p>Zero-shot chain-of-thought is one line and often a large gain (<i>Kojima et al., 2022</i>). It is also frequently used where it costs money and destabilises the output. Five tasks — decide.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">decide</span> Reasoning, or straight answer?</div>
+    <div class="sbbody" id="cot"></div>
+  </div>
+
+  <div class="story reveal">
+    <div class="tag">Carry this into Day 2</div>
+    <h3>Each lever has one job</h3>
+    <p style="margin-bottom:0"><b>Examples</b> fix format. <b>Delimiters</b> fix boundaries. <b>Roles</b> nudge vocabulary. <b>Reasoning</b> fixes multi-step tasks. Using the wrong lever for a problem is the most common mistake in this course — and it is exactly what M3 pushes on.</p>
+  </div>
+
+  <div class="pager">
+    <a href="module-1-what-is-a-prompt.html"><small>Previous</small><b>← M1</b></a>
+    <a class="next" href="module-3-advanced-reasoning.html"><small>Next</small><b>M3 · Advanced →</b></a>
+  </div>
+</main>
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a> · <a href="../course/">Course page</a></div></footer>
+<script src="assets/script-data.js?v=pe2"></script>
+<script src="assets/pe-playground.js?v=pe2"></script>
+<script src="assets/site.js?v=pe2"></script>
+<script>PEPG.shotLadder('shots');PEPG.delimiterDemo('delim');PEPG.roleEffect('role');PEPG.cotWhen('cot');</script>
+</body>
+</html>
