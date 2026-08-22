@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Practice zone — Prompt Engineering</title>
-<link rel="stylesheet" href="assets/style.css?v=pe3">
+<link rel="stylesheet" href="assets/style.css?v=pe5">
 <style>
   .expl{background:var(--tsoft);border-left:3px solid var(--turq);border-radius:0 8px 8px 0;
     padding:10px 13px;margin-top:9px;font-size:13.5px;color:var(--ink)}
@@ -57,7 +57,7 @@
 </main>
 
 <footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
-<script src="assets/pe-practice-data.js?v=pe3"></script>
+<script src="assets/pe-practice-data.js?v=pe5"></script>
 <script>
 (function(){
   'use strict';
@@ -68,6 +68,11 @@
   function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').replace(/["'.,]/g,'').trim();}
   var order=PRACTICE.map(function(_,i){return i;});
 
+  function promptScore(q,ans){
+    var txt=String(ans||''), hits=[], got=0;
+    q.rubric.forEach(function(r){ var ok=r.re.test(txt); if(ok)got++; hits.push({k:r.k,ok:ok,tip:r.tip}); });
+    return {got:got,hits:hits};
+  }
   function correct(q,ans){
     if(ans==null) return false;
     if(q.t==='mcq'||q.t==='bug') return ans===q.a;
@@ -75,6 +80,12 @@
     if(q.t==='fill') return q.accept.some(function(x){return norm(x)===norm(ans);});
     if(q.t==='match') return q.pairs.every(function(_,i){return ans[i]===i;});
     if(q.t==='order'||q.t==='build') return q.items.every(function(_,i){return ans[i]===i;});
+    if(q.t==='prompt'){ return promptScore(q,ans).got>=Math.ceil(q.rubric.length*0.6); }
+    if(q.t==='critique'){ var g=0,b=0; (ans||[]).forEach(function(x){ q.a.indexOf(x)>=0?g++:b++; });
+      return g===q.a.length && b===0; }
+    if(q.t==='cloze') return q.blanks.every(function(bl,i){ var v=(ans||[])[i];
+      return v && bl.accept.some(function(a){return norm(a)===norm(v);}); });
+    if(q.t==='classify') return q.items.every(function(it,i){ return (ans||{})[i]===it.b; });
     return false;
   }
 
@@ -112,6 +123,27 @@
         return '<div style="display:flex;gap:9px;align-items:center;margin:6px 0;flex-wrap:wrap">'+
           '<b style="min-width:150px">'+esc(p[0])+'</b><select class="msel" data-left="'+j+'" style="flex:1;min-width:220px;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px">'+
           '<option value="">— choose —</option>'+rights.map(function(r){return '<option value="'+r.j+'">'+esc(r.t)+'</option>';}).join('')+'</select></div>';}).join('');
+    } else if(q.t==='prompt'){
+      body='<div class="sbout" style="white-space:normal;margin-bottom:8px"><b>Scenario:</b> '+esc(q.scenario)+'</div>'+
+        '<textarea class="wprompt" style="width:100%;min-height:130px;padding:11px;border:1.5px solid var(--line);border-radius:9px;font-family:var(--mono);font-size:12.5px" placeholder="write your prompt here..."></textarea>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:5px">Checked against '+q.rubric.length+' things a strong prompt needs. <span class="wc"></span></div>';
+    } else if(q.t==='critique'){
+      body='<pre style="white-space:pre-wrap"><code>'+esc(q.prompt)+'</code></pre>'+
+        '<div style="font-size:12px;color:var(--muted);margin:6px 0">Select every genuine flaw.</div>'+
+        q.o.map(function(o,j){return '<button class="btn ghost sm opt" data-j="'+j+'" style="display:block;width:100%;text-align:left;margin:5px 0">'+esc(o)+'</button>';}).join('');
+    } else if(q.t==='cloze'){
+      var parts=q.template.split('___');
+      body='<div style="font-family:var(--mono);font-size:12.5px;line-height:2.1">';
+      parts.forEach(function(part,j){ body+=esc(part);
+        if(j<q.blanks.length) body+='<input class="cz" data-i="'+j+'" style="width:190px;padding:4px 8px;border:1.5px solid var(--turq);border-radius:6px;font-family:inherit;font-size:12.5px" placeholder="'+esc(q.blanks[j].hint||'')+'">'; });
+      body+='</div>';
+    } else if(q.t==='classify'){
+      body=q.items.map(function(it,j){
+        return '<div style="display:flex;gap:9px;align-items:center;margin:6px 0;flex-wrap:wrap">'+
+          '<span style="flex:1;min-width:200px">'+esc(it.t)+'</span>'+
+          '<select class="cls" data-i="'+j+'" style="min-width:190px;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px">'+
+          '<option value="">— choose —</option>'+q.buckets.map(function(b,k){return '<option value="'+k+'">'+esc(b)+'</option>';}).join('')+
+          '</select></div>';}).join('');
     } else {
       body='<div class="slotrow" data-slot="1"><span class="ph">click chips in order</span></div>'+
         '<div class="chipwrap" data-pool="1">'+q.items.map(function(t,j){return '<button class="chipx" data-j="'+j+'">'+esc(t)+'</button>';})
@@ -151,6 +183,30 @@
         var li=+s.dataset.left; if(m[li]!=null)s.value=String(m[li]);
         s.onchange=function(){ if(s.value==='')delete m[li]; else m[li]=+s.value;
           st[q.id]=st[q.id]||{}; st[q.id].ans=m; save();};});
+    } else if(q.t==='prompt'){
+      var ta=d.querySelector('.wprompt'), wc=d.querySelector('.wc');
+      if(typeof cur==='string') ta.value=cur;
+      function cnt(){var n=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;wc.textContent=n?('  ·  '+n+' words'):'';}
+      ta.oninput=function(){st.answers=null;st[q.id]=st[q.id]||{};st[q.id].ans=ta.value;save();cnt();};
+      cnt();
+    } else if(q.t==='critique'){
+      var cs=Array.isArray(cur)?cur.slice():[];
+      [].slice.call(d.querySelectorAll('.opt')).forEach(function(b){
+        var j=+b.dataset.j; if(cs.indexOf(j)>=0)b.classList.add('turq');
+        b.onclick=function(){var k=cs.indexOf(j);
+          if(k>=0){cs.splice(k,1);b.classList.remove('turq');}else{cs.push(j);b.classList.add('turq');}
+          st[q.id]=st[q.id]||{};st[q.id].ans=cs.slice();save();};});
+    } else if(q.t==='cloze'){
+      var vs=Array.isArray(cur)?cur.slice():[];
+      [].slice.call(d.querySelectorAll('.cz')).forEach(function(inp){
+        var i=+inp.dataset.i; if(vs[i])inp.value=vs[i];
+        inp.oninput=function(){vs[i]=inp.value;st[q.id]=st[q.id]||{};st[q.id].ans=vs.slice();save();};});
+    } else if(q.t==='classify'){
+      var cm=(cur&&typeof cur==='object'&&!Array.isArray(cur))?cur:{};
+      [].slice.call(d.querySelectorAll('.cls')).forEach(function(sel){
+        var i=+sel.dataset.i; if(cm[i]!=null)sel.value=String(cm[i]);
+        sel.onchange=function(){if(sel.value==='')delete cm[i];else cm[i]=+sel.value;
+          st[q.id]=st[q.id]||{};st[q.id].ans=cm;save();};});
     } else {
       var slot=d.querySelector('[data-slot]'),pool=d.querySelector('[data-pool]');
       var ord=Array.isArray(cur)?cur.slice():[];
@@ -167,7 +223,7 @@
     }
     d.querySelector('[data-check]').onclick=function(){
       var ans=(st[q.id]||{}).ans;
-      if(ans==null||(Array.isArray(ans)&&!ans.length)||(typeof ans==='string'&&!ans.trim())){
+      if(ans==null||(Array.isArray(ans)&&!ans.filter(function(x){return x&&String(x).trim();}).length)||(typeof ans==='string'&&!ans.trim())||(typeof ans==='object'&&!Array.isArray(ans)&&!Object.keys(ans).length)){
         d.querySelector('[data-fb]').innerHTML='<div class="status no" style="font-size:13px">Have a go first — a wrong answer is more useful than a blank one.</div>';return;}
       var ok=correct(q,ans);
       st[q.id].done=true; st[q.id].ok=ok; save(); show(d,q,ok); tally();
@@ -188,6 +244,15 @@
     else if(q.t==='bug') right='The faulty line is <b>line '+(q.a+1)+'</b>: <code>'+esc(q.lines[q.a])+'</code>';
     else if(q.t==='fill') right='Accepted answer: <b>'+esc(q.accept[0])+'</b>';
     else if(q.t==='match') right='Correct pairing: '+q.pairs.map(function(p){return '<b>'+esc(p[0])+'</b> → '+esc(p[1]);}).join(' · ');
+    else if(q.t==='prompt'){
+      var ps=promptScore(q,(st[q.id]||{}).ans);
+      right='<b>Your prompt scored '+ps.got+' / '+q.rubric.length+'</b><br>'+
+        ps.hits.map(function(h){return (h.ok?'✓ ':'✗ ')+esc(h.k)+(h.ok?'':' — '+esc(h.tip));}).join('<br>')+
+        '<br><br><b>A strong answer looks like:</b><br><code style="white-space:pre-wrap">'+esc(q.model)+'</code>';
+    }
+    else if(q.t==='critique') right='The genuine flaws were: '+q.a.map(function(i){return '<b>'+esc(q.o[i])+'</b>';}).join(' · ');
+    else if(q.t==='cloze') right='Blanks: '+q.blanks.map(function(b,i){return (i+1)+') <b>'+esc(b.accept[0])+'</b>';}).join(' · ');
+    else if(q.t==='classify') right='Correct: '+q.items.map(function(it){return esc(it.t)+' → <b>'+esc(q.buckets[it.b])+'</b>';}).join(' · ');
     else right='Correct order: '+q.items.map(function(t,i){return (i+1)+'. '+esc(t);}).join('  ');
     d.querySelector('[data-fb]').innerHTML=
       '<div class="status '+(ok?'ok':'no')+'" style="font-size:14px;margin-top:8px">'+(ok?'✓ Correct':'✗ Not quite')+'</div>'+

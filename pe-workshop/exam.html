@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Final Evaluation — Prompt Engineering</title>
-<link rel="stylesheet" href="assets/style.css?v=pe4">
+<link rel="stylesheet" href="assets/style.css?v=pe5">
 </head>
 <body>
 <header class="top"><div class="nav">
@@ -26,7 +26,7 @@
 
 <footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a></div></footer>
 
-<script src="assets/pe-exam-data.js?v=pe4"></script>
+<script src="assets/pe-exam-data.js?v=pe5"></script>
 <script>
 (function(){
   'use strict';
@@ -68,6 +68,26 @@
     if(q.t==='order'||q.t==='build'){
       var n=0; (ans||[]).forEach(function(v,i){ if(v===i) n++; });
       return Math.floor(n/q.items.length*q.marks);
+    }
+    if(q.t==='prompt'){
+      var txt=String(ans||'');
+      if(txt.trim().split(/\s+/).length<6) return 0;      // not a real attempt
+      var got=0; q.rubric.forEach(function(r){ if(r.re.test(txt)) got++; });
+      return Math.min(q.marks,got);
+    }
+    if(q.t==='critique'){
+      var sel=ans||[], good=0, bad=0;
+      sel.forEach(function(x){ if(q.a.indexOf(x)>=0) good++; else bad++; });
+      return Math.max(0,Math.min(q.marks,good-bad));       // wrong picks cancel right ones
+    }
+    if(q.t==='cloze'){
+      var g=0; q.blanks.forEach(function(b,i){
+        var v=(ans||[])[i]; if(v&&b.accept.some(function(a){return norm(a)===norm(v);})) g++; });
+      return Math.min(q.marks,g);
+    }
+    if(q.t==='classify'){
+      var c=0; q.items.forEach(function(it,i){ if((ans||{})[i]===it.b) c++; });
+      return Math.min(q.marks,c);
     }
     return 0;
   }
@@ -205,6 +225,39 @@
             rights.map(function(r){return '<option value="'+r.j+'">'+esc(r.t)+'</option>';}).join('')+
             '</select></div>';}).join('');
     }
+    else if(q.t==='prompt'){
+      body='<div class="sbout" style="white-space:normal;margin-bottom:8px"><b>Scenario:</b> '+esc(q.scenario)+'</div>'+
+        '<textarea class="wprompt" style="width:100%;min-height:130px;padding:11px;border:1.5px solid var(--line);'+
+        'border-radius:9px;font-family:var(--mono);font-size:12.5px" placeholder="write your prompt here..."></textarea>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:5px">Marked on <b>'+q.marks+'</b> things a strong prompt for this task must contain. '+
+        'Partial credit — include as many as you can. <span class="wc"></span></div>';
+    }
+    else if(q.t==='critique'){
+      body='<pre style="white-space:pre-wrap"><code>'+esc(q.prompt)+'</code></pre>'+
+        '<div style="font-size:12px;color:var(--muted);margin:6px 0">Select every genuine flaw. '+
+        '<b>A wrong selection cancels out a right one</b>, so do not guess.</div>'+
+        q.o.map(function(o,j){return '<button class="btn ghost sm opt" data-j="'+j+'" style="display:block;width:100%;text-align:left;margin:5px 0">'+esc(o)+'</button>';}).join('');
+    }
+    else if(q.t==='cloze'){
+      var parts=q.template.split('___');
+      body='<div style="font-family:var(--mono);font-size:12.5px;line-height:2.1">';
+      parts.forEach(function(part,j){
+        body+=esc(part);
+        if(j<q.blanks.length) body+='<input class="cz" data-i="'+j+'" style="width:190px;padding:4px 8px;border:1.5px solid var(--turq);'+
+          'border-radius:6px;font-family:inherit;font-size:12.5px" placeholder="'+esc(q.blanks[j].hint||'')+'">';
+      });
+      body+='</div><div style="font-size:12px;color:var(--muted);margin-top:6px">One mark per blank.</div>';
+    }
+    else if(q.t==='classify'){
+      body='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">One mark per correct placement.</div>'+
+        q.items.map(function(it,j){
+          return '<div style="display:flex;gap:9px;align-items:center;margin:6px 0;flex-wrap:wrap">'+
+            '<span style="flex:1;min-width:200px">'+esc(it.t)+'</span>'+
+            '<select class="cls" data-i="'+j+'" style="min-width:190px;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px">'+
+            '<option value="">— choose —</option>'+
+            q.buckets.map(function(b,k){return '<option value="'+k+'">'+esc(b)+'</option>';}).join('')+
+            '</select></div>';}).join('');
+    }
     else if(q.t==='order'||q.t==='build'){
       body='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+
         (q.t==='build'?'Click chips in the right order to build the pipeline.':'Click in the correct order.')+
@@ -256,6 +309,40 @@
         s.onchange=function(){
           if(s.value==='') delete cur[li]; else cur[li]=+s.value;
           st.answers[q.id]=Object.keys(cur).length?cur:null; save(); refresh(); };
+      });
+    }
+    else if(q.t==='prompt'){
+      var ta=d.querySelector('.wprompt'), wc=d.querySelector('.wc');
+      if(typeof saved==='string') ta.value=saved;
+      function count(){ var n=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;
+        wc.textContent=n?('  ·  '+n+' words'):''; }
+      ta.oninput=function(){ st.answers[q.id]=ta.value.trim()||null; save(); count(); refresh(); };
+      count();
+    }
+    else if(q.t==='critique'){
+      var csel=Array.isArray(saved)?saved.slice():[];
+      [].slice.call(d.querySelectorAll('.opt')).forEach(function(b){
+        var j=+b.dataset.j;
+        if(csel.indexOf(j)>=0) b.classList.add('turq');
+        b.onclick=function(){ var k=csel.indexOf(j);
+          if(k>=0){csel.splice(k,1);b.classList.remove('turq');} else {csel.push(j);b.classList.add('turq');}
+          st.answers[q.id]=csel.length?csel.slice():null; save(); refresh(); };
+      });
+    }
+    else if(q.t==='cloze'){
+      var vals=Array.isArray(saved)?saved.slice():[];
+      [].slice.call(d.querySelectorAll('.cz')).forEach(function(inp){
+        var i=+inp.dataset.i; if(vals[i]) inp.value=vals[i];
+        inp.oninput=function(){ vals[i]=inp.value;
+          st.answers[q.id]=vals.some(function(v){return v&&v.trim();})?vals.slice():null; save(); refresh(); };
+      });
+    }
+    else if(q.t==='classify'){
+      var cmap=(saved&&typeof saved==='object'&&!Array.isArray(saved))?saved:{};
+      [].slice.call(d.querySelectorAll('.cls')).forEach(function(sel){
+        var i=+sel.dataset.i; if(cmap[i]!=null) sel.value=String(cmap[i]);
+        sel.onchange=function(){ if(sel.value==='') delete cmap[i]; else cmap[i]=+sel.value;
+          st.answers[q.id]=Object.keys(cmap).length?cmap:null; save(); refresh(); };
       });
     }
     else if(q.t==='order'||q.t==='build'){
