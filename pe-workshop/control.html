@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam control — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe5">
+<style>
+  .bigcode{font-family:var(--mono);font-size:52px;font-weight:800;letter-spacing:6px;
+    background:var(--ink);color:#fff;padding:22px 28px;border-radius:14px;text-align:center;margin:10px 0}
+  .bigclock{font-family:var(--mono);font-size:64px;font-weight:800;text-align:center;
+    background:var(--ink);color:#fff;border-radius:14px;padding:16px;margin:10px 0;letter-spacing:3px}
+  .bigclock.warn{color:#FFD166}.bigclock.crit{color:#FF8A70}
+  .prog{height:26px;background:var(--line);border-radius:13px;overflow:hidden;margin:10px 0}
+  .prog div{height:100%;background:var(--turq);transition:width .4s;display:grid;place-items:center;
+    color:#fff;font-weight:800;font-size:12px}
+  .rost{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  .rost button{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;
+    font-size:13px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .rost button.started{border-color:var(--amber);background:var(--amberbg);color:#9A6B12}
+  .rost button.done{border-color:var(--turq);background:var(--turq);color:#fff}
+  .mtable{width:100%;border-collapse:collapse;font-size:13.5px}
+  .mtable th{text-align:left;padding:7px 9px;background:var(--ink);color:#fff;font-size:11px;text-transform:uppercase}
+  .mtable td{padding:6px 9px;border-top:1px solid var(--line)}
+  .stat{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:9px 13px;margin:0 7px 7px 0;min-width:88px}
+  .stat b{display:block;font-size:21px;color:var(--coral)}
+  .stat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+  textarea{width:100%;min-height:90px;padding:10px;border:1.5px solid var(--line);border-radius:9px;
+    font-family:var(--mono);font-size:13px}
+</style>
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Exam control · facilitator only</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="exam.html">Exam</a>
+</div></header>
+<main class="wrap" id="root"></main>
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · facilitator tool</div></footer>
+<script>
+(function(){
+  'use strict';
+  var KEY='pe_control_v1', PASS=50, TOTAL=57, MINUTES=75;
+  var PASS_HASH='qwfkqb';                       // passphrase: venkat-control-2026
+  var MASK='22262b462a2d1a35423e32312e';        // exam code, XOR-masked with the passphrase
+  function hash(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return (x>>>0).toString(36);}
+  function unmask(key){var o='';for(var i=0;i<MASK.length;i+=2){
+    o+=String.fromCharCode(parseInt(MASK.substr(i,2),16)^key.charCodeAt((i/2)%key.length));}return o;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fmt(ms){ms=Math.max(0,ms);var t=Math.floor(ms/1000),m=Math.floor(t/60),s=t%60;
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
+
+  var st={roster:[],rows:[],started:{},elapsed:0,running:false,codeShown:false};
+  try{var L=JSON.parse(localStorage.getItem(KEY)); if(L)st=Object.assign(st,L);}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+  var CODE='', tick=null;
+
+  /* ── gate ── */
+  function gate(msg){
+    document.getElementById('root').innerHTML=
+      '<div class="mhead"><div class="k">Facilitator only</div><h1>Exam control</h1>'+
+      '<div class="goal">This page shows the live access code. Enter your facilitator passphrase.</div></div>'+
+      '<div class="concept" style="max-width:460px">'+
+      (msg?'<div class="status no" style="margin-bottom:9px">'+esc(msg)+'</div>':'')+
+      '<input id="pw" type="password" placeholder="passphrase" style="width:100%;padding:10px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:11px">'+
+      '<button class="btn turq" id="in">Open control room</button></div>';
+    document.getElementById('in').onclick=function(){
+      var v=document.getElementById('pw').value.trim();
+      if(hash(v)!==PASS_HASH) return gate('Not that one.');
+      CODE=unmask(v); room();
+    };
+    document.getElementById('pw').onkeydown=function(e){if(e.key==='Enter')document.getElementById('in').click();};
+  }
+
+  /* ── room ── */
+  function room(){
+    document.getElementById('root').innerHTML=
+      '<div class="mhead"><div class="k">Live · facilitator only · do not project this whole page</div>'+
+      '<h1>Exam control</h1></div>'+
+
+      '<div class="concept"><h3>1 · Access code</h3>'+
+      '<p style="font-size:13.5px;color:var(--body)">Reveal only when the room is on the exam page and ready. Each student\'s clock starts when they sign in.</p>'+
+      '<div id="codebox"></div>'+
+      '<button class="btn turq" id="revealbtn"></button></div>'+
+
+      '<div class="concept"><h3>2 · Class clock <span class="pill" id="clkstate"></span></h3>'+
+      '<p style="font-size:13.5px;color:var(--body)">Your own countdown for announcements. Students each have their own timer — this one is for you and the projector.</p>'+
+      '<div class="bigclock" id="clk">'+fmt(MINUTES*60000)+'</div>'+
+      '<div class="sbctrls"><button class="btn sm turq" id="startbtn">Start</button>'+
+      '<button class="btn sm ghost" id="resetbtn">Reset</button>'+
+      '<span class="pill a" id="cue"></span></div></div>'+
+
+      '<div class="concept"><h3>3 · Progress</h3>'+
+      '<p style="font-size:13.5px;color:var(--body)">Paste your roll numbers once. Click a name to mark it <b>started</b>; recording a submit code marks it <b>submitted</b> automatically.</p>'+
+      '<textarea id="rosterin" placeholder="21CS001&#10;21CS002&#10;..." style="min-height:70px"></textarea>'+
+      '<div class="sbctrls" style="margin-top:8px"><button class="btn sm turq" id="setroster">Set roster</button></div>'+
+      '<div id="progwrap"></div><div class="rost" id="rost"></div></div>'+
+
+      '<div class="concept"><h3>4 · Record submissions</h3>'+
+      '<p style="font-size:13.5px;color:var(--body)">Paste the codes students show you, one per line. Each is checksum-verified.</p>'+
+      '<textarea id="codein" placeholder="21CS001-42-57-K3P9"></textarea>'+
+      '<div class="sbctrls" style="margin-top:8px"><button class="btn turq" id="addcodes">Add</button>'+
+      '<button class="btn ghost" id="csv">Download CSV</button>'+
+      '<button class="btn ghost" id="clearall">Clear everything</button></div>'+
+      '<div id="msgs"></div></div>'+
+
+      '<div id="summary"></div>'+
+      '<div class="concept"><h3>5 · Register <span class="pill" id="cnt"></span></h3>'+
+      '<div style="overflow:auto"><table class="mtable" id="tbl"></table></div></div>'+
+
+      '<div class="story"><div class="tag">Before you close this tab</div>'+
+      '<p style="margin-bottom:0"><b>Download the CSV.</b> Everything here lives in this browser only.</p></div>';
+
+    document.getElementById('revealbtn').onclick=function(){st.codeShown=!st.codeShown;save();paintCode();};
+    document.getElementById('startbtn').onclick=toggleClock;
+    document.getElementById('resetbtn').onclick=function(){stopClock();st.elapsed=0;st.running=false;save();paintClock();};
+    document.getElementById('setroster').onclick=function(){
+      var list=document.getElementById('rosterin').value.split(/[\n,]+/).map(function(x){return x.trim().toUpperCase();}).filter(Boolean);
+      if(!list.length)return; st.roster=list; save(); paintProgress();
+      document.getElementById('rosterin').value='';};
+    document.getElementById('addcodes').onclick=addCodes;
+    document.getElementById('csv').onclick=exportCsv;
+    document.getElementById('clearall').onclick=function(){
+      if(confirm('Clear roster, timer and all recorded marks? Download the CSV first.')){
+        st={roster:[],rows:[],started:{},elapsed:0,running:false,codeShown:false};save();room();}};
+    if(st.roster.length) document.getElementById('rosterin').value='';
+    paintCode(); paintClock(); paintProgress(); paintTable();
+    if(st.running) startClock();
+  }
+
+  function paintCode(){
+    document.getElementById('codebox').innerHTML=st.codeShown?'<div class="bigcode">'+esc(CODE)+'</div>':'';
+    document.getElementById('revealbtn').textContent=st.codeShown?'Hide the code':'Reveal the code';
+  }
+
+  /* ── clock ── */
+  function remaining(){return MINUTES*60000-st.elapsed;}
+  function paintClock(){
+    var el=document.getElementById('clk'); if(!el)return;
+    var r=remaining();
+    el.textContent=fmt(r);
+    el.className='bigclock'+(r<5*60000?' crit':r<15*60000?' warn':'');
+    document.getElementById('clkstate').textContent=st.running?'running':'paused';
+    document.getElementById('startbtn').textContent=st.running?'Pause':'Start';
+    var cue=document.getElementById('cue');
+    cue.textContent = r<=0?'time up — collect codes'
+      : r<5*60000?'say: five minutes left'
+      : r<15*60000?'say: fifteen minutes left' : '';
+  }
+  function startClock(){
+    var last=Date.now(); if(tick)clearInterval(tick);
+    tick=setInterval(function(){
+      var now=Date.now(); st.elapsed+=now-last; last=now;
+      if(st.elapsed%5000<1100)save();
+      paintClock();
+      if(remaining()<=0){stopClock();st.running=false;save();paintClock();}
+    },1000);
+  }
+  function stopClock(){if(tick){clearInterval(tick);tick=null;}}
+  function toggleClock(){st.running=!st.running;save();if(st.running)startClock();else stopClock();paintClock();}
+
+  /* ── progress ── */
+  function submittedSet(){var s={};st.rows.forEach(function(r){s[r.roll]=r;});return s;}
+  function paintProgress(){
+    var sub=submittedSet(), n=st.roster.length;
+    var done=st.roster.filter(function(r){return sub[r];}).length;
+    var started=st.roster.filter(function(r){return st.started[r]&&!sub[r];}).length;
+    var pct=n?Math.round(done/n*100):0;
+    document.getElementById('progwrap').innerHTML= n
+      ? '<div class="prog"><div style="width:'+pct+'%">'+(pct>8?done+' / '+n+' submitted':'')+'</div></div>'+
+        '<div style="font-size:13px;color:var(--muted)"><b>'+done+'</b> submitted · <b>'+started+'</b> started · <b>'+
+        (n-done-started)+'</b> not started</div>'
+      : '<div style="font-size:13px;color:var(--muted)">Paste a roster above to track progress.</div>';
+    document.getElementById('rost').innerHTML=st.roster.map(function(r){
+      var cls=sub[r]?'done':(st.started[r]?'started':'');
+      var lbl=sub[r]?(r+' · '+sub[r].score):r;
+      return '<button class="'+cls+'" data-r="'+esc(r)+'">'+esc(lbl)+'</button>';}).join('');
+    [].slice.call(document.getElementById('rost').querySelectorAll('button')).forEach(function(b){
+      b.onclick=function(){var r=b.dataset.r;
+        if(submittedSet()[r])return;                 // already submitted
+        st.started[r]=!st.started[r]; save(); paintProgress();};});
+  }
+
+  /* ── codes ── */
+  function parseCode(raw){
+    var c=raw.trim().toUpperCase().replace(/[,;]+$/,''); if(!c)return null;
+    var m=c.match(/^(.+)-(\d+)-(\d+)-([A-Z0-9]+)$/);
+    if(!m) return {raw:c,ok:false,why:'not in ROLL-SCORE-TOTAL-CHECK format'};
+    var roll=m[1],score=+m[2],total=+m[3],chk=m[4];
+    if(hash(roll+'|'+score+'|'+total).toUpperCase()!==chk)
+      return {raw:c,roll:roll,score:score,total:total,ok:false,why:'checksum mismatch — likely mistyped'};
+    if(score>total) return {raw:c,ok:false,why:'score exceeds total'};
+    return {raw:c,roll:roll,score:score,total:total,ok:true};
+  }
+  function addCodes(){
+    var ta=document.getElementById('codein');
+    var list=ta.value.split(/[\n\r]+/).map(parseCode).filter(Boolean);
+    var msgs=[],added=0,clean=true;
+    list.forEach(function(r){
+      if(!r.ok){clean=false;msgs.push('<div class="status no" style="font-size:13px">✗ <code>'+esc(r.raw)+'</code> — '+r.why+'</div>');return;}
+      if(st.rows.some(function(x){return x.roll===r.roll;})){
+        msgs.push('<div style="font-size:13px;color:#9A6B12">! <b>'+esc(r.roll)+'</b> already recorded — ignored</div>');return;}
+      st.rows.push(r); added++;
+      if(st.roster.length&&st.roster.indexOf(r.roll)<0)
+        msgs.push('<div style="font-size:13px;color:#9A6B12">! <b>'+esc(r.roll)+'</b> is not on the roster — added anyway</div>');
+    });
+    save();
+    document.getElementById('msgs').innerHTML=msgs.join('')||
+      (added?'<div class="status ok" style="font-size:13px">✓ Added '+added+'.</div>':'');
+    if(clean)ta.value='';
+    paintProgress(); paintTable();
+  }
+  function paintTable(){
+    var t=document.getElementById('tbl');
+    var rows=st.rows.slice().sort(function(a,b){return a.roll<b.roll?-1:1;});
+    t.innerHTML='<tr><th>Roll</th><th>Marks</th><th>%</th><th>Band</th></tr>'+rows.map(function(r){
+      var p=Math.round(r.score/r.total*100);
+      return '<tr><td><b>'+esc(r.roll)+'</b></td><td>'+r.score+' / '+r.total+'</td>'+
+        '<td><b style="color:'+(p>=PASS?'var(--turq7)':'var(--bad)')+'">'+p+'%</b></td>'+
+        '<td>'+(p>=80?'Distinction':p>=PASS?'Pass':'Below '+PASS+'%')+'</td></tr>';}).join('');
+    document.getElementById('cnt').textContent=st.rows.length+' recorded';
+    summary();
+  }
+  function summary(){
+    var el=document.getElementById('summary');
+    if(!st.rows.length){el.innerHTML='';return;}
+    var p=st.rows.map(function(r){return r.score/r.total*100;});
+    var n=p.length,mean=p.reduce(function(a,b){return a+b;},0)/n;
+    var s=p.slice().sort(function(a,b){return a-b;});
+    var med=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;
+    el.innerHTML='<div class="concept"><h3>At a glance</h3><div>'+
+      '<span class="stat"><b>'+n+'</b><span>recorded</span></span>'+
+      '<span class="stat"><b>'+Math.round(mean)+'%</b><span>mean</span></span>'+
+      '<span class="stat"><b>'+Math.round(med)+'%</b><span>median</span></span>'+
+      '<span class="stat"><b>'+Math.round(s[0])+'%</b><span>lowest</span></span>'+
+      '<span class="stat"><b>'+Math.round(s[n-1])+'%</b><span>highest</span></span>'+
+      '<span class="stat"><b>'+p.filter(function(x){return x>=PASS;}).length+'</b><span>at/above '+PASS+'%</span></span>'+
+      '</div></div>';
+  }
+  function exportCsv(){
+    if(!st.rows.length)return;
+    var out='roll,score,total,percent\n'+st.rows.map(function(r){
+      return [r.roll,r.score,r.total,(r.score/r.total*100).toFixed(1)].join(',');}).join('\n');
+    var a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(out);
+    a.download='pe-marks-'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a);a.click();a.remove();
+  }
+  window.__ctl={parseCode:parseCode,state:function(){return st;},unmask:unmask};
+  gate('');
+})();
+</script>
+</body>
+</html>
