@@ -823,3 +823,139 @@
   }
   Object.assign(window.PEPG,{shotLadder,delimiterDemo,roleEffect,cotWhen});
 })();
+
+/* ══════════════ M4 · ANSWER ENGINEERING ══════════════ */
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const esc=(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // ── answer space: free-form labels drift, enums do not ──────────────
+  function answerSpace(id){
+    const el=$(id); if(!el) return;
+    let mode='free';
+    el.innerHTML=`<div class="sbctrls">
+      <button class="btn sm turq" id="${id}-a">Free-form</button>
+      <button class="btn sm ghost" id="${id}-b">Closed list (enum)</button>
+      <button class="btn sm ghost" id="${id}-c">Enum + fallback</button></div>
+      <div class="sbout" id="${id}-o"></div>`;
+    const D={
+      free:{p:'What is the sentiment of this review?',
+        out:['Positive','positive','Mostly positive','POSITIVE','Favourable','It seems quite positive overall'],
+        note:'Six runs, <b>six different labels</b> — and every one of them is arguably correct. Your database now has six values meaning the same thing. This is the most common structured-output bug in production.'},
+      enum:{p:'Classify the sentiment as exactly one of: POSITIVE, NEGATIVE, NEUTRAL.\nReply with the label only.',
+        out:['POSITIVE','POSITIVE','POSITIVE','POSITIVE','POSITIVE','POSITIVE'],
+        note:'One value, six times. You have <b>constrained the answer space</b> — the model can no longer invent a synonym.'},
+      fall:{p:'Classify as exactly one of: POSITIVE, NEGATIVE, NEUTRAL, UNCLEAR.\nUse UNCLEAR if the review is ambiguous or not a review. Reply with the label only.',
+        out:['POSITIVE','POSITIVE','UNCLEAR','POSITIVE','POSITIVE','UNCLEAR'],
+        note:'The fallback is the part people forget. Without <code>UNCLEAR</code>, an ambiguous input gets <b>forced</b> into a wrong bucket and you never find out. <b>Always give the model a legal way to say "I don\'t know".</b>'}
+    };
+    function render(){
+      const d=D[mode], uniq=new Set(d.out).size;
+      $(id+'-o').innerHTML=`Prompt:\n${esc(d.p)}\n\nSix runs:\n`+
+        d.out.map((o,k)=>`  ${k+1}. ${esc(o)}`).join('\n')+
+        `\n\nDistinct values: <b>${uniq}</b> ${uniq===1?'<span class="pill g">clean</span>':uniq<=2?'<span class="pill g">clean, with a fallback</span>':'<span class="pill r">unusable downstream</span>'}\n\n${d.note}`;
+    }
+    $(id+'-a').onclick=()=>{mode='free';render();};
+    $(id+'-b').onclick=()=>{mode='enum';render();};
+    $(id+'-c').onclick=()=>{mode='fall';render();};
+    render();
+  }
+
+  // ── build a schema, watch the output conform ────────────────────────
+  function schemaBuilder(id){
+    const el=$(id); if(!el) return;
+    const C={fields:false,types:false,noprose:false,example:false,nulls:false};
+    const N={fields:'Name the exact fields',types:'State the type of each',noprose:'Forbid any prose or code fences',
+             example:'Give one filled example',nulls:'Say what to do when a field is missing'};
+    el.innerHTML=`<div class="chipwrap" id="${id}-b"></div><div class="sbout" id="${id}-o"></div>`;
+    function render(){
+      $(id+'-b').innerHTML=Object.keys(C).map(k=>
+        `<button class="chipx ${C[k]?'on':''}" data-k="${k}">${C[k]?'✓ ':''}${N[k]}</button>`).join('');
+      $(id+'-b').querySelectorAll('button').forEach(b=>b.onclick=()=>{C[b.dataset.k]=!C[b.dataset.k];render();});
+      const n=Object.values(C).filter(Boolean).length;
+      let out,verdict;
+      if(!C.fields) {out='Here are the invoice details:\n\nThe invoice number is 4471, dated 12 March 2026, for Rs 56,640.';
+        verdict='<span class="pill r">prose</span> No fields named, so you get a sentence. Nothing can parse this.';}
+      else if(!C.noprose) {out='Sure! Here is the JSON:\n\n```json\n{ "invoice_no": "4471", "date": "12 March 2026", "total": "Rs 56,640" }\n```';
+        verdict='<span class="pill a">nearly</span> Correct data, wrapped in a greeting and a markdown fence. <code>JSON.parse()</code> throws on the very first character.';}
+      else if(!C.types) {out='{ "invoice_no": "4471", "date": "12 March 2026", "total": "Rs 56,640" }';
+        verdict='<span class="pill a">parses, but</span> Every value is a string, the date is not machine-readable and the total carries a currency symbol. Your database will reject it.';}
+      else if(!C.nulls) {out='{ "invoice_no": 4471, "date": "2026-03-12", "total": 56640.00, "po_number": "unknown" }';
+        verdict='<span class="pill a">close</span> Types are right — but the missing PO number became the <b>string "unknown"</b>. The model invented a value because you never said what to do instead.';}
+      else {out='{ "invoice_no": 4471, "date": "2026-03-12", "total": 56640.00, "po_number": null }';
+        verdict='<span class="pill g">production-ready</span> Named fields, correct types, ISO date, numeric total, explicit <code>null</code>, no prose. '+(C.example?'The worked example removed the last of the ambiguity.':'Add a filled example and the last ambiguity goes too.');}
+      $(id+'-o').innerHTML=`Constraints applied: <b>${n} / 5</b>\n\nModel output:\n${esc(out)}\n\n${verdict}`;
+    }
+    render();
+  }
+
+  // ── the five ways JSON output breaks ────────────────────────────────
+  function parseFail(id){
+    const el=$(id); if(!el) return;
+    const F=[
+      ['Markdown fence','```json\n{"total": 56640}\n```','The single most common failure. Models wrap JSON in fences because that is how JSON appears in their training data.','Say "output raw JSON only, no code fences", and strip fences defensively before parsing anyway.'],
+      ['Chatty preamble','Sure! Here is the JSON you asked for:\n{"total": 56640}','Helpfulness training leaking through.','"Reply with the JSON object and nothing else." Then validate that the first character is { .'],
+      ['Trailing comma','{"invoice_no": 4471, "total": 56640,}','Valid in JavaScript, invalid in JSON. Easy to miss by eye.','A strict parser catches it. Do not hand-roll parsing with regex.'],
+      ['Invented field','{"invoice_no": 4471, "total": 56640, "confidence": "high"}','The model added a field you never asked for. Harmless-looking until a strict schema rejects the whole record.','Say "include exactly these fields and no others", and validate against the schema.'],
+      ['Missing value guessed','{"invoice_no": 4471, "po_number": "N/A"}','The field was absent in the source, so the model filled in a plausible string.','Say explicitly: "use null for anything not present. Never guess."']
+    ];
+    let sel=null;
+    el.innerHTML=`<p style="font-size:13.5px;color:var(--body);margin:0 0 8px">Five real outputs from the same extraction prompt. Click each to see the cause and the fix.</p>
+      <div id="${id}-b"></div><div class="sbout" id="${id}-o">All five parse-fail. Only one of them looks wrong at a glance.</div>`;
+    function render(){
+      $(id+'-b').innerHTML=F.map((f,k)=>
+        `<button class="btn sm ${sel===k?'turq':'ghost'}" data-k="${k}" style="display:block;width:100%;text-align:left;margin:3px 0">${f[0]}</button>`).join('');
+      $(id+'-b').querySelectorAll('button').forEach(b=>b.onclick=()=>{sel=+b.dataset.k;render();
+        const f=F[sel];
+        $(id+'-o').innerHTML=`<b>${f[0]}</b>\n\n${esc(f[1])}\n\n<b>Why:</b> ${f[2]}\n\n<b>Fix:</b> ${f[3]}`;});
+    }
+    render();
+  }
+
+  // ── validate your own output (bring your own model) ─────────────────
+  function jsonValidator(id){
+    const el=$(id); if(!el) return;
+    el.innerHTML=`<p style="font-size:13.5px;color:var(--body);margin-top:0">Run your extraction prompt in your own LLM and paste the raw output. This validates it exactly as your code would.</p>
+      <div class="sbout" style="white-space:pre-wrap;margin-bottom:8px">Required schema:
+  invoice_no  number        (required)
+  date        string, YYYY-MM-DD (required)
+  total       number        (required)
+  po_number   string or null (required, may be null)</div>
+      <textarea id="${id}-t" style="width:100%;min-height:100px;padding:10px;border:1.5px solid var(--line);border-radius:9px;font-family:var(--mono);font-size:12.5px" placeholder='paste the raw model output here'></textarea>
+      <div class="sbctrls" style="margin-top:8px"><button class="btn sm turq" id="${id}-g">Validate</button>
+      <button class="btn sm ghost" id="${id}-c">Clear</button></div>
+      <div class="sbout" id="${id}-o">Nothing validated yet.</div>`;
+    $(id+'-g').onclick=()=>{
+      const raw=$(id+'-t').value;
+      if(!raw.trim()){$(id+'-o').textContent='Paste some output first.';return;}
+      const notes=[]; let s=raw.trim();
+      if(/^```/.test(s)){notes.push('✗ Wrapped in a markdown code fence — JSON.parse() would throw. (Stripped so we can continue.)');
+        s=s.replace(/^```[a-z]*\s*/i,'').replace(/```\s*$/,'').trim();}
+      if(!/^[{[]/.test(s)){const i=s.indexOf('{');
+        if(i>0){notes.push('✗ Prose before the JSON — the model added a preamble. (Trimmed so we can continue.)');s=s.slice(i);}}
+      if(/,\s*[}\]]/.test(s)) notes.push('✗ Trailing comma — valid JS, invalid JSON.');
+      let obj=null;
+      try{obj=JSON.parse(s);}catch(e){
+        $(id+'-o').innerHTML=notes.join('\n')+(notes.length?'\n\n':'')+'✗ <b>Does not parse as JSON.</b>\n  '+esc(e.message)+
+          '\n\nThis is what your pipeline would hit at 3am. Tighten the prompt: name the fields, forbid prose and fences, then re-run.';return;}
+      const req={invoice_no:'number',date:'string',total:'number',po_number:'nullable-string'};
+      Object.keys(req).forEach(k=>{
+        if(!(k in obj)){notes.push('✗ Missing required field: '+k);return;}
+        const v=obj[k], t=req[k];
+        if(t==='number'&&typeof v!=='number') notes.push('✗ '+k+' should be a number, got '+(typeof v)+' ('+JSON.stringify(v)+')');
+        if(t==='string'&&typeof v!=='string') notes.push('✗ '+k+' should be a string, got '+(typeof v));
+        if(k==='date'&&typeof v==='string'&&!/^\d{4}-\d{2}-\d{2}$/.test(v)) notes.push('✗ date is not YYYY-MM-DD: "'+v+'"');
+        if(t==='nullable-string'&&!(v===null||typeof v==='string')) notes.push('✗ po_number should be a string or null');
+        if(k==='po_number'&&typeof v==='string'&&/^(n\/a|unknown|none|nil|-)$/i.test(v.trim()))
+          notes.push('✗ po_number is "'+v+'" — the model guessed instead of using null. Say "use null, never guess."');
+      });
+      Object.keys(obj).forEach(k=>{ if(!(k in req)) notes.push('! Extra field not in the schema: '+k); });
+      const bad=notes.filter(n=>n.startsWith('✗')).length;
+      $(id+'-o').innerHTML=(notes.length?notes.map(esc).join('\n'):'')+(notes.length?'\n\n':'')+
+        (bad===0?'✓ <b>Valid against the schema.</b> '+(notes.length?'The warnings above are worth tidying, but your code would accept this.':'Nothing to fix — this is what a production extraction prompt should return.')
+                :'<b>'+bad+' problem'+(bad>1?'s':'')+' your pipeline would reject.</b> Every one is fixable in the prompt, not the code.');
+    };
+    $(id+'-c').onclick=()=>{$(id+'-t').value='';$(id+'-o').textContent='Nothing validated yet.';};
+  }
+  Object.assign(window.PEPG,{answerSpace,schemaBuilder,parseFail,jsonValidator});
+})();

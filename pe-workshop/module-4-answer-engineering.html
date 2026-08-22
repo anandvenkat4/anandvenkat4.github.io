@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M4 · Answer engineering — Prompt Engineering</title>
+<link rel="stylesheet" href="assets/style.css?v=pe3">
+</head>
+<body>
+<header class="top"><div class="nav">
+  <div class="mono">VL</div>
+  <div class="brandname">Prompt Engineering<small>Venkat Loganathan · TCE</small></div>
+  <span class="sp"></span>
+  <a class="navlink" href="index.html">Home</a>
+  <a class="navlink" href="module-1-what-is-a-prompt.html">M1</a>
+  <a class="navlink" href="module-2-text-techniques.html">M2</a>
+  <a class="navlink" href="module-4-answer-engineering.html">M4</a>
+  <a class="navlink" href="module-3-advanced-reasoning.html">M3</a>
+  <a class="navlink" href="module-5-agents-multilingual.html">M5</a>
+  <a class="navlink" href="module-6a-rag.html">M6a</a>
+  <a class="navlink" href="module-6b-security-eval.html">M6b</a>
+  <a class="navlink" href="practice.html">Practice</a>
+  <a class="navlink" href="run-of-show.html">Run</a>
+  <span class="badge" id="progress">0 checks</span>
+  <button class="factoggle" id="factoggle">Facilitator</button>
+</div></header>
+<div class="facbar">INTERNAL — do not project the facilitator view to students</div>
+
+<main class="wrap">
+  <div class="mhead">
+    <div class="k">Module 4 · Day 1 · revision</div>
+    <h1>Answer engineering — output your code can trust</h1>
+    <div class="goal">A correct answer in the wrong shape is <b>a failed answer</b>. This module is about controlling what comes back, and refusing to trust it until it has been checked.</div>
+  </div>
+  <div class="facnote" data-notes="m4"></div>
+
+  <div class="story reveal">
+    <div class="tag">Start here · the 3am failure</div>
+    <h3>The model was right. The pipeline still broke.</h3>
+    <p>Your extractor ran happily for three weeks. Then one invoice came back as <code>```json { "total": 56640 } ```</code> — same data, same accuracy, wrapped in a markdown fence. <code>JSON.parse()</code> threw on the first character and the night's batch died.</p>
+    <p style="margin-bottom:0">Nobody prompted it badly. They just never <b>specified the shape</b> and never <b>validated the result</b>. Those two omissions are this whole module.</p>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Answer space — stop the model inventing synonyms</h3>
+    <p>Before you worry about JSON, decide <b>what answers are even legal</b>. An open question invites an open vocabulary.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">compare</span> Free-form vs a closed list</div>
+    <div class="sbbody" id="space"></div>
+  </div>
+
+  <div class="check" data-check="pe-m4c1" data-answer="D">
+    <div class="q">Concept check 1 — Why add <code>UNCLEAR</code> to a list of sentiment labels?</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. It makes the prompt longer <span class="why">True and irrelevant.</span></button>
+    <button class="opt" data-opt="B">B. Models prefer four options <span class="why">No such preference exists.</span></button>
+    <button class="opt" data-opt="C">C. It improves accuracy on clear cases <span class="why">Clear cases were already handled correctly.</span></button>
+    <button class="opt" data-opt="D">D. Without it, ambiguous input is forced into a wrong bucket and you never find out <span class="why">Correct. If every input must be POSITIVE, NEGATIVE or NEUTRAL, a blank form or a foreign-language review still gets one of them. Give the model a legal way to say "I don't know" — otherwise it silently lies.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Answer shape — build the schema one constraint at a time</h3>
+    <p>Toggle each constraint and watch the output change. Note where it <i>looks</i> fixed but still is not.</p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">build it</span> Five constraints that make output parseable</div>
+    <div class="sbbody" id="schema"></div>
+  </div>
+  <div class="concept reveal">
+    <div class="terms">
+      <div class="term"><b>Name the fields, always</b>Without names you get prose. This is the single biggest step.</div>
+      <div class="term"><b>Types are not optional</b><code>"Rs 56,640"</code> and <code>56640.00</code> are both "the total". Only one goes in a database.</div>
+      <div class="term"><b>Dates in ISO</b><code>2026-03-12</code>, never "12 March 2026". Say so explicitly or you will get both.</div>
+      <div class="term"><b>Say what "missing" looks like</b>Left unsaid, the model writes <code>"N/A"</code>, <code>"unknown"</code> or invents a value. <b>Ask for <code>null</code> and forbid guessing.</b></div>
+    </div>
+  </div>
+
+  <div class="concept reveal">
+    <h3>The five ways JSON output actually breaks</h3>
+    <p>Every one of these is a real output from a well-written prompt. Click through — the point is that <b>only one of them looks obviously wrong.</b></p>
+  </div>
+  <div class="sandbox reveal">
+    <div class="sbhead"><span class="tag">click through</span> Parse failures and their fixes</div>
+    <div class="sbbody" id="fails"></div>
+  </div>
+
+  <div class="check" data-check="pe-m4c2" data-answer="B">
+    <div class="q">Concept check 2 — Your extractor returns <code>{"po_number": "N/A"}</code> when the field is absent. The best fix is:</div>
+    <div class="protocol">Commit → discuss → commit → reveal</div>
+    <button class="opt" data-opt="A">A. Treat "N/A" as null in your code <span class="why">A patch, not a fix — and tomorrow it returns "unknown", or "none", or "-".</span></button>
+    <button class="opt" data-opt="B">B. Instruct: use null for anything not present, never guess <span class="why">Correct. Fix it at the source. Otherwise you accumulate an ever-growing list of sentinel strings meaning "absent", and each one is a bug waiting to happen.</span></button>
+    <button class="opt" data-opt="C">C. Lower the temperature <span class="why">The model is not being random — it was never told what to do.</span></button>
+    <button class="opt" data-opt="D">D. Remove the field from the schema <span class="why">You need the field; you just need it honest.</span></button>
+  </div>
+
+  <div class="concept reveal">
+    <h3>Never trust it — validate, then repair</h3>
+    <p>Prompting reduces malformed output. It does not eliminate it. <b>Production extraction always has a validator</b>, and usually a repair step:</p>
+    <pre><code>output = call_model(prompt)
+try:
+    data = validate(parse(output))          # schema check, not just JSON.parse
+except InvalidOutput as e:
+    output = call_model(repair_prompt(output, e))   # one retry, showing the error
+    data = validate(parse(output))          # fail loudly if it still breaks</code></pre>
+    <div class="terms">
+      <div class="term"><b>Retry once, with the error</b>Telling the model exactly what was wrong fixes most malformed outputs on the second attempt.</div>
+      <div class="term"><b>Fail loudly after that</b>Never let an unparseable record slip through as a default or an empty object.</div>
+      <div class="term"><b>Log every failure</b>The failures are your test set — this is where Lab 8's evaluation items come from.</div>
+    </div>
+  </div>
+
+  <div class="ex reveal">
+    <div class="tag">Bring your own output</div>
+    <h3>Validate a real extraction from your own model</h3>
+    <div id="valid"></div>
+  </div>
+
+  <div class="story reveal">
+    <div class="tag">Carry this forward</div>
+    <h3>This is the habit the whole course rests on</h3>
+    <p style="margin-bottom:0">Constrain the answer space, specify the shape, then <b>verify before you believe it</b>. It is the same instinct behind grounding in M6a and evaluation in M6b — and it is the difference between a demo and something you would let near real users.</p>
+  </div>
+
+  <div class="pager">
+    <a href="module-2-text-techniques.html"><small>Previous</small><b>← M2</b></a>
+    <a class="next" href="module-3-advanced-reasoning.html"><small>Next</small><b>M3 · Advanced →</b></a>
+  </div>
+</main>
+<footer><div class="wrap"><b style="color:#fff">Prompt Engineering</b> · <a href="index.html">Home</a> · <a href="../course/">Course page</a></div></footer>
+<script src="assets/script-data.js?v=pe3"></script>
+<script src="assets/pe-playground.js?v=pe3"></script>
+<script src="assets/site.js?v=pe3"></script>
+<script>PEPG.answerSpace('space');PEPG.schemaBuilder('schema');PEPG.parseFail('fails');PEPG.jsonValidator('valid');</script>
+</body>
+</html>
