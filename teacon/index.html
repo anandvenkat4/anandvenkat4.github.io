@@ -1,0 +1,540 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Teachers' AI Prompt Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arima:wght@500;700&family=Hind+Madurai:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a single ruled-notebook column (ink on paper by day, chalk on blackboard by night), red margin rule on the left, sticky chip index on top. */
+:root {
+  --paper: #f8f9f4;
+  --card: #ffffff;
+  --rule: #e2e9f2;
+  --margin: #c4423a;
+  --ink: #1d2856;
+  --ink-soft: #4d587d;
+  --line: #dfe3ea;
+  --mark: #fff1a6;
+  --mark-ink: #1d2856;
+  --red: #c4423a;
+  --amber: #c98a12;
+  --green: #2f7d4f;
+  --chip: #eef1f7;
+  --display: "Arima", "Hind Madurai", Georgia, serif;
+  --body: "Hind Madurai", "Noto Sans Tamil", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12172a; --card: #1a2037; --rule: #1c2340; --margin: #e2695f;
+    --ink: #e8ebf6; --ink-soft: #a9b1cf; --line: #2b3354; --mark: #f1d660; --mark-ink: #12172a;
+    --red: #ec7a70; --amber: #e7b04a; --green: #6cc493; --chip: #222943;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12172a; --card: #1a2037; --rule: #1c2340; --margin: #e2695f;
+  --ink: #e8ebf6; --ink-soft: #a9b1cf; --line: #2b3354; --mark: #f1d660; --mark-ink: #12172a;
+  --red: #ec7a70; --amber: #e7b04a; --green: #6cc493; --chip: #222943;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 0 48px;
+}
+.wrap { max-width: 760px; margin-inline: auto; position: relative; }
+@media (min-width: 860px) {
+  .wrap { padding-left: 40px; border-left: 2px solid var(--margin); }
+}
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--margin); outline-offset: 2px; border-radius: 4px; }
+
+/* Header on ruled paper */
+header.top {
+  padding-block: 40px 28px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, var(--rule) 31px, var(--rule) 32px);
+  background-position: 0 6px;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--margin); font-weight: 600;
+}
+header.top h1 { font-size: clamp(30px, 7vw, 46px); margin-top: 10px; font-weight: 700; }
+header.top .ta { font-family: var(--display); font-size: clamp(20px, 4.6vw, 26px); color: var(--ink-soft); margin-top: 4px; }
+header.top .lede { margin-top: 18px; max-width: 60ch; color: var(--ink-soft); }
+header.top .lede strong { color: var(--ink); font-weight: 600; }
+
+/* Chip index */
+nav.index {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--paper);
+  padding-block: 10px; margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+}
+nav.index::-webkit-scrollbar { display: none; }
+nav.index a {
+  flex: none; text-decoration: none; font-size: 14px; font-weight: 500;
+  background: var(--chip); color: var(--ink); padding: 6px 12px; border-radius: 999px;
+}
+nav.index a:hover { background: var(--mark); color: var(--mark-ink); }
+
+section { padding-block: 36px 8px; scroll-margin-top: 64px; }
+section > h2 { font-size: clamp(24px, 5vw, 30px); }
+section > .h2ta { font-family: var(--display); color: var(--ink-soft); font-size: 18px; margin-top: 2px; }
+section > .intro { margin-top: 12px; color: var(--ink-soft); max-width: 62ch; }
+
+/* Four questions */
+.four { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.q {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
+}
+.q .k { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--margin); }
+.q .t { font-family: var(--display); font-size: 22px; font-weight: 700; }
+.q .d { font-size: 14px; color: var(--ink-soft); }
+
+/* Prompt groups and cards */
+.group { margin-top: 26px; }
+.group h3 { font-size: 20px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.group h3 span { font-size: 16px; color: var(--ink-soft); font-weight: 500; }
+.cards { margin-top: 12px; display: grid; gap: 14px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px; min-width: 0;
+}
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.card-head h4 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.35; }
+.card-head h4 small { display: block; font-weight: 500; color: var(--ink-soft); font-size: 14px; }
+.copy {
+  flex: none; font: 600 13px var(--body); color: var(--ink); background: var(--chip);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; min-width: 74px;
+}
+.copy:hover { background: var(--mark); color: var(--mark-ink); }
+.copy.done { background: var(--green); color: var(--card); border-color: var(--green); }
+pre.prompt {
+  margin: 12px 0 0; white-space: pre-wrap; word-break: break-word;
+  font-family: var(--body); font-size: 15px; line-height: 1.6;
+  background: transparent; padding: 0; color: var(--ink);
+}
+pre.prompt b { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--margin); letter-spacing: .04em; }
+pre.prompt mark { background: var(--mark); color: var(--mark-ink); border-radius: 3px; padding: 0 2px; }
+.note { margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+.note strong { color: var(--red); }
+
+/* Three checks */
+ol.checks { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; counter-reset: c; }
+ol.checks li {
+  counter-increment: c; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+}
+ol.checks li::before {
+  content: counter(c); font-family: var(--display); font-weight: 700; font-size: 26px; color: var(--margin); line-height: 1;
+  padding-top: 2px;
+}
+ol.checks .en { font-weight: 600; }
+ol.checks .ta { color: var(--ink-soft); }
+
+/* Rule banner */
+.rule3 {
+  margin-top: 18px; padding: 18px; border-radius: 12px; border: 2px dashed var(--ink-soft);
+  display: grid; gap: 6px;
+}
+.rule3 p { font-family: var(--display); font-size: clamp(20px, 4.4vw, 24px); font-weight: 700; }
+.rule3 p.ta { font-size: 17px; font-weight: 500; color: var(--ink-soft); font-family: var(--body); }
+
+/* Data rule */
+.data {
+  margin-top: 18px; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--red);
+  border-radius: 10px; padding: 16px;
+}
+.data p + p { margin-top: 8px; }
+.data .ta { color: var(--ink-soft); }
+
+/* Traffic light */
+.lights { margin-top: 18px; display: grid; gap: 12px; }
+.light {
+  display: grid; grid-template-columns: 22px 1fr; gap: 14px; align-items: start;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+}
+.dot { width: 22px; height: 22px; border-radius: 50%; margin-top: 3px; }
+.light.r .dot { background: var(--red); }
+.light.a .dot { background: var(--amber); }
+.light.g .dot { background: var(--green); }
+.light h4 { margin: 0; font-size: 17px; }
+.light h4 span { color: var(--ink-soft); font-weight: 500; font-size: 15px; }
+.light p { color: var(--ink-soft); font-size: 15px; margin-top: 2px; }
+.credit { margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+
+/* Monday */
+.monday { margin-top: 18px; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.mon { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.mon .who { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--margin); font-weight: 600; }
+.mon p { margin-top: 6px; font-size: 15px; }
+
+/* Kurals */
+.kurals { margin-top: 18px; display: grid; gap: 14px; }
+.kural { padding: 16px 18px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.kural .num { font-family: var(--mono); font-size: 12px; color: var(--margin); font-weight: 600; letter-spacing: .06em; }
+.kural .verse { font-family: var(--display); font-size: clamp(18px, 4.2vw, 21px); font-weight: 700; line-height: 1.5; margin-top: 6px; }
+.kural .mean { margin-top: 6px; color: var(--ink-soft); font-size: 15px; }
+
+footer {
+  margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--line);
+  display: grid; gap: 6px;
+}
+footer .big { font-family: var(--display); font-size: clamp(26px, 6vw, 36px); font-weight: 700; }
+footer .bigta { font-family: var(--display); font-size: clamp(20px, 4.6vw, 26px); color: var(--margin); font-weight: 700; }
+footer .small { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">TEACON 2026 · Chennai Trade Centre · 31 Oct</p>
+    <h1>Teachers' AI Prompt Kit</h1>
+    <p class="ta">ஆசிரியர்களுக்கான AI கையேடு</p>
+    <p class="lede">Every prompt from the session <strong>"Generative AI and the Future of Education"</strong>, ready to copy. Replace the <mark style="background:var(--mark);color:var(--mark-ink);border-radius:3px;padding:0 3px">[highlighted parts]</mark> with your own class, subject and topic. Never paste a child's name or personal details.</p>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <a href="#formula">4 questions</a>
+    <a href="#teachers">For teachers</a>
+    <a href="#leaders">For principals</a>
+    <a href="#students">With students</a>
+    <a href="#demos">From the demos</a>
+    <a href="#checks">3 checks</a>
+    <a href="#assess">Traffic light</a>
+    <a href="#data">Student data</a>
+    <a href="#monday">Monday</a>
+    <a href="#kurals">Kurals</a>
+  </nav>
+
+  <section id="formula">
+    <h2>Every good prompt answers four questions</h2>
+    <p class="h2ta">நல்ல கேள்விக்கு நான்கு பகுதிகள்</p>
+    <p class="intro">A lazy prompt gets a generic answer that could be for any child in any country. Answer these four, and the AI writes for your class.</p>
+    <div class="four">
+      <div class="q"><span class="k">WHO</span><span class="t">யார்?</span><span class="d">Who should the AI be? An experienced Class 7 science teacher.</span></div>
+      <div class="q"><span class="k">WHAT</span><span class="t">என்ன?</span><span class="d">What should it do? A 40-minute lesson plan on photosynthesis.</span></div>
+      <div class="q"><span class="k">FOR WHOM</span><span class="t">யாருக்கு?</span><span class="d">For whom? 45 mixed-ability children, more at home in Tamil, no lab.</span></div>
+      <div class="q"><span class="k">HOW</span><span class="t">எப்படி?</span><span class="d">In what form? A table, one hands-on activity, three questions, an exit ticket.</span></div>
+    </div>
+  </section>
+
+  <section id="teachers">
+    <h2>For teachers</h2>
+    <p class="h2ta">ஆசிரியர்களுக்கு</p>
+
+    <div class="cards">
+      <article class="card">
+        <div class="card-head"><h4>Lesson plan<small>பாடத் திட்டம்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are an experienced [science] teacher in a Tamil Nadu school.
+<b>WHAT:</b> Create a [40]-minute lesson plan on [photosynthesis] for Class [7].
+<b>FOR WHOM:</b> [45] students of mixed ability; many are more comfortable in Tamil than English. Resources: [a blackboard, chart paper, leaves from the school garden; no lab].
+<b>HOW:</b> Give it as a table with columns for minutes, what the teacher does, what students do, and materials. Include one hands-on activity, three check-for-understanding questions (one in Tamil), and a 5-minute exit ticket.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Worksheet at three levels<small>மூன்று நிலை பயிற்சித்தாள்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a [maths] teacher who makes learning fun.
+<b>WHAT:</b> Make a worksheet on [comparing and adding fractions] for Class [5].
+<b>FOR WHOM:</b> One class with three groups: children who are still struggling, children working at grade level, and fast learners who need a challenge.
+<b>HOW:</b> Three sections labelled Support, Core and Challenge, with five questions each. Use everyday Tamil Nadu contexts. Keep the language simple and add an answer key at the end.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Question paper with answer key<small>வினாத்தாள்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are an experienced examiner for Class [9] [science].
+<b>WHAT:</b> Write [10] multiple-choice questions on [the topic].
+<b>FOR WHOM:</b> Students preparing for the [mid-term] exam, with a mix of easy, medium and hard questions.
+<b>HOW:</b> Mark each question's difficulty. Give an answer key with a one-line reason for each answer. No trick questions.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Explain it simply, in Tamil<small>எளிய தமிழில் விளக்கம்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a patient teacher who explains with stories.
+<b>WHAT:</b> Explain [the concept] in simple Tamil.
+<b>FOR WHOM:</b> A Class [6] student who found the textbook explanation hard.
+<b>HOW:</b> Under 150 words, with one example from daily life in Tamil Nadu. Then ask three short questions to check understanding.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Report-card comment<small>மதிப்பீட்டு அட்டைக் குறிப்பு</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a caring class teacher.
+<b>WHAT:</b> Write a report-card comment for a Class [4] student. Do not use a name.
+<b>FOR WHOM:</b> The child's parents.
+<b>HOW:</b> About 40 words, warm and specific. Strengths: [reads fluently, helps classmates]. Next step: [neater working in maths]. No labels such as "weak" or "slow".</pre>
+        <p class="note"><strong>AI drafts, the teacher decides.</strong> Add what only you know about the child before it goes home.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Rubric<small>மதிப்பீட்டு அளவுகோல்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are an experienced [English] teacher.
+<b>WHAT:</b> Create a rubric for [a 2-minute oral presentation].
+<b>FOR WHOM:</b> Class [8] students, who will see the rubric before they start.
+<b>HOW:</b> A table with 4 criteria and 4 levels (Beginning, Developing, Proficient, Excellent), with short, child-friendly descriptions.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>AI-proof an assignment<small>பணியை மறுவடிவமைத்தல்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are an assessment designer for schools.
+<b>WHAT:</b> Redesign this assignment so students must show their own thinking: [paste your assignment].
+<b>FOR WHOM:</b> Class [8] students who all have AI at home.
+<b>HOW:</b> Give three versions: one AI-free (done in class), one AI-assisted (students show their drafts and the prompts they used), and one AI-integrated (students critique an AI answer). One short paragraph each.</pre>
+      </article>
+    </div>
+  </section>
+
+  <section id="leaders">
+    <h2>For principals and managements</h2>
+    <p class="h2ta">தலைமையாசிரியர்கள் மற்றும் நிர்வாகத்திற்கு</p>
+
+    <div class="cards">
+      <article class="card">
+        <div class="card-head"><h4>Parent circular in Tamil and English<small>பெற்றோர் சுற்றறிக்கை</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are the principal of a Tamil Nadu school, writing to parents.
+<b>WHAT:</b> Write a short circular about [the Parent-Teacher Meeting on Saturday, date, time, place].
+<b>FOR WHOM:</b> Parents of Classes [6 to 10]. Many read Tamil more comfortably than English; some are first-generation school parents.
+<b>HOW:</b> Warm and respectful, under 120 words. Tamil version first, then English. [Mention what parents should bring.]</pre>
+        <p class="note">Ask a Tamil teacher to read the Tamil version before it goes out.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Marks analysis<small>மதிப்பெண் பகுப்பாய்வு</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are an experienced academic coordinator.
+<b>WHAT:</b> Analyse the attached marks for Class [8] [maths]. Students are coded; there are no names.
+<b>FOR WHOM:</b> The class teacher and the principal, who have 10 minutes to read this.
+<b>HOW:</b> Give (1) the weakest topics, with the class average for each; (2) the students who need support, with one line on why; (3) any link between attendance and marks; (4) a simple two-week remedial plan. One short table, plain language.</pre>
+        <p class="note"><strong>Before you upload:</strong> replace names with roll numbers or codes, and remove phone numbers and addresses.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>First draft of a school AI policy<small>பள்ளி AI கொள்கை</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are an education policy adviser for Indian schools.
+<b>WHAT:</b> Draft a one-page AI-use policy for our school, Classes [6 to 12], for our teachers to discuss and change.
+<b>FOR WHOM:</b> Teachers, students and parents.
+<b>HOW:</b> Plain language, in English and Tamil. Cover what students and teachers may use AI for, what is not allowed, the student-data rule (no names, photos or marks in public AI tools), and how every assignment states whether it is AI-free, AI-assisted or AI-integrated.</pre>
+        <p class="note">Write the final version <em>with</em> your teachers, not for them.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Summarise a long circular or order<small>சுருக்கம்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a principal's assistant.
+<b>WHAT:</b> Summarise this document: [paste the text].
+<b>FOR WHOM:</b> Busy teachers who need to know what changes for them.
+<b>HOW:</b> Five bullet points in English and the same five in Tamil. Then list any deadlines and who must act on each.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Reply to an upset parent<small>பெற்றோருக்குப் பதில்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a calm, respectful school principal.
+<b>WHAT:</b> Draft a reply to a parent who is upset that [their child's marks have dropped]. Do not include names.
+<b>FOR WHOM:</b> A worried parent who wants to be heard.
+<b>HOW:</b> Under 150 words. Acknowledge the concern, explain the facts simply, and offer a time to meet. Nothing defensive.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>FAQ for parents: "Should my child use AI?"<small>பெற்றோருக்கான கேள்வி–பதில்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are the principal of a Tamil Nadu school, writing to parents.
+<b>WHAT:</b> Write a one-page FAQ for parents titled "Should my child use AI?". Answer five questions: Should my child use AI for homework? From what age? Is my child's data safe? How will the school know the work is my child's own? How can I help at home?
+<b>FOR WHOM:</b> Parents of Classes [6 to 10]. Many read Tamil more comfortably than English; some are first-generation school parents.
+<b>HOW:</b> Warm, simple and reassuring, under 200 words in each language. Give the Tamil version first, then the English. Explain the school's traffic light: red (no AI), amber (AI for ideas, and the child shows her work), green (AI used and then checked). End with one line inviting parents to speak to the class teacher.</pre>
+        <p class="note"><strong>Check the facts before it goes home:</strong> each AI tool sets its own minimum age (ChatGPT, for example, requires users to be at least 13, with a parent's permission under 18). Ask a Tamil teacher to read the Tamil version.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="students">
+    <h2>To use with students</h2>
+    <p class="h2ta">மாணவர்களுடன்</p>
+    <p class="intro">Teach children to make AI ask the questions, and to check its answers before they trust them.</p>
+
+    <div class="cards">
+      <article class="card">
+        <div class="card-head"><h4>A tutor, not an answer machine<small>விடை அல்ல, வழிகாட்டி</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a patient tutor.
+<b>WHAT:</b> Help me solve this problem without giving me the answer: [the problem].
+<b>FOR WHOM:</b> I am a Class [9] student.
+<b>HOW:</b> Ask me one question at a time and wait for my reply. Give a hint only if I am stuck twice.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Check an AI answer<small>AI பதிலைச் சரிபார்த்தல்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt"><b>WHO:</b> You are a fact-checking coach for students.
+<b>WHAT:</b> Here is an answer I got from AI: [paste the answer].
+<b>FOR WHOM:</b> A Class [10] student learning to verify information.
+<b>HOW:</b> List each claim in it, tell me how I could check each one (which book, website or person), and mark the claims most likely to be wrong.</pre>
+      </article>
+    </div>
+  </section>
+
+  <section id="demos">
+    <h2>From today's demos</h2>
+    <p class="h2ta">இன்றைய நேரடி செயல்விளக்கங்கள்</p>
+    <p class="intro">The prompts used live in the session. Try them yourself, and check what the AI says before you trust it. The co-pilot demos (lesson plan, circular, worksheet, marks) and the parents' FAQ are in the sections above.</p>
+
+    <div class="cards">
+      <article class="card">
+        <div class="card-head"><h4>The silence test<small>1331-வது குறள்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt">திருக்குறளின் 1331-வது குறள் என்ன? அந்தக் குறளையும் அதன் பொருளையும் கூறுங்கள்.</pre>
+        <p class="note">There are only 1,330 Kurals. Does the AI say so, or does it invent one?</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>A new Kural on the mobile phone<small>புதிய குறள்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt">நீங்கள் ஒரு தமிழ் இலக்கண அறிஞர். 'கைப்பேசி' (mobile phone) பற்றி, திருக்குறள் போல ஒரு புதிய குறள் எழுதுங்கள். குறள் வெண்பா இலக்கணத்தை முழுமையாகப் பின்பற்ற வேண்டும்: முதல் அடியில் நான்கு சீர், இரண்டாம் அடியில் மூன்று சீர், வெண்டளை, ஈற்றுச்சீர் நாள்/மலர்/காசு/பிறப்பு வாய்பாட்டில். பிறகு அதன் பொருளை ஆங்கிலத்தில் ஒரு வரியில் தாருங்கள்.</pre>
+        <p class="note">Ask a Tamil teacher to check the metre.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Ask it to check itself<small>சுய சரிபார்ப்பு</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt">உங்கள் குறள், குறள் வெண்பா இலக்கணத்தைச் சரியாகப் பின்பற்றுகிறதா? ஒவ்வொரு சீரையும் அசை பிரித்து, தளையைச் சரிபாருங்கள்.</pre>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>Quotes with sources<small>மேற்கோள்கள்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt">Give me three quotes by Dr. APJ Abdul Kalam about artificial intelligence, with the book title and page number for each.</pre>
+        <p class="note"><strong>Check every quote and page number</strong> before you use one in a speech.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h4>The 10-second homework<small>பத்து வினாடி வீட்டுப்பாடம்</small></h4><button class="copy" type="button">Copy</button></div>
+<pre class="prompt">Write a 300-word essay on "The importance of trees" for a Class 8 student.</pre>
+        <p class="note">Then use "AI-proof an assignment" above to redesign it.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="checks">
+    <h2>Three checks before you drink</h2>
+    <p class="h2ta">நம்புவதற்கு முன் மூன்று கேள்விகள்</p>
+    <p class="intro">AI predicts the next word; it doesn't know. It is fluent, not always right. Teach every child these three questions.</p>
+    <ol class="checks">
+      <li><div><p class="en">Where did this come from?</p><p class="ta">எங்கிருந்து வந்தது?</p></div></li>
+      <li><div><p class="en">Who else says so?</p><p class="ta">வேறு யார் சொல்கிறார்கள்?</p></div></li>
+      <li><div><p class="en">Does it make sense to me?</p><p class="ta">இது எனக்குச் சரியாகப் படுகிறதா?</p></div></li>
+    </ol>
+    <div class="rule3">
+      <p>AI drafts. The teacher decides. Relationships stay human.</p>
+      <p class="ta">AI வரைவு தரும். ஆசிரியர் முடிவு செய்வார். உறவுகள் மனிதர்களிடமே.</p>
+    </div>
+  </section>
+
+  <section id="assess">
+    <h2>A traffic light for every assignment</h2>
+    <p class="h2ta">ஒவ்வொரு பணிக்கும் ஒரு போக்குவரத்து விளக்கு</p>
+    <p class="intro">Detectors can't reliably tell AI writing from a child's, so design the task instead. Tell students the level when you set the work.</p>
+    <div class="lights">
+      <div class="light r"><span class="dot" aria-hidden="true"></span><div><h4>Red: AI-free <span>· AI இல்லை</span></h4><p>Done in class, on paper or out loud. What can this child do on her own? Vivas, classroom writing, solving problems in front of the teacher.</p></div></div>
+      <div class="light a"><span class="dot" aria-hidden="true"></span><div><h4>Amber: AI-assisted <span>· AI உதவியுடன்</span></h4><p>AI allowed for ideas or feedback. The child shows the process: drafts, the prompts she used, what she changed and why.</p></div></div>
+      <div class="light g"><span class="dot" aria-hidden="true"></span><div><h4>Green: AI-integrated <span>· AI ஒருங்கிணைப்புடன்</span></h4><p>The task requires AI and a critique of it. "Ask AI, then find three things it got wrong."</p></div></div>
+    </div>
+    <p class="credit">A simpler version of the AI Assessment Scale by Mike Perkins, Leon Furze and Jasper Roe: <a href="https://aiassessmentscale.com/" target="_blank" rel="noopener">aiassessmentscale.com</a></p>
+  </section>
+
+  <section id="data">
+    <h2>The student-data rule</h2>
+    <p class="h2ta">மாணவர் தகவல் விதி</p>
+    <div class="data">
+      <p><strong>Never put anything that identifies a child into a public AI tool: no names, photos, addresses or phone numbers. Use codes that can't be traced back, and keep the list of codes offline.</strong></p>
+      <p class="ta">குழந்தையை அடையாளம் காட்டும் எந்த விவரத்தையும் பொது AI கருவிகளில் ஒருபோதும் உள்ளிடாதீர்கள். பெயருக்குப் பதில் குறியீடுகளைப் பயன்படுத்துங்கள்.</p>
+      <p>India's DPDP Rules, notified in November 2025, set strict conditions on children's personal data, including verifiable parental consent, with narrow exemptions. Most duties apply from about mid-2027. Build the habit now.</p>
+    </div>
+  </section>
+
+  <section id="monday">
+    <h2>One thing on Monday morning</h2>
+    <p class="h2ta">திங்கள் காலை ஒரு செயல்</p>
+    <div class="monday">
+      <div class="mon"><p class="who">Teachers</p><p>Use one prompt this week to save one hour. Spend that hour with one child.</p></div>
+      <div class="mon"><p class="who">Principals</p><p>Write a one-page AI policy with your teachers. Each department redesigns one assessment this term.</p></div>
+      <div class="mon"><p class="who">Managements</p><p>Invest in teachers' time and training before you buy any AI product.</p></div>
+    </div>
+  </section>
+
+  <section id="kurals">
+    <h2>Valluvar said it first</h2>
+    <p class="h2ta">வள்ளுவர் முன்பே சொன்னார்</p>
+    <div class="kurals">
+      <div class="kural"><p class="num">KURAL 423 · அறிவுடைமை</p><p class="verse">எப்பொருள் யார்யார்வாய்க் கேட்பினும் அப்பொருள்<br>மெய்ப்பொருள் காண்ப தறிவு.</p><p class="mean">Whatever you hear, from whoever says it, wisdom is finding the truth in it. Today, "whoever" includes a machine.</p></div>
+      <div class="kural"><p class="num">KURAL 517 · தெரிந்துவினையாடல்</p><p class="verse">இதனை இதனால் இவன்முடிக்கும் என்றாய்ந்து<br>அதனை அவன்கண் விடல்.</p><p class="mean">First judge that this one can finish this task by these means, then hand it over. Ask the same of AI.</p></div>
+      <div class="kural"><p class="num">KURAL 396 · கல்வி</p><p class="verse">தொட்டனைத் தூறும் மணற்கேணி மாந்தர்க்குக்<br>கற்றனைத் தூறும் அறிவு.</p><p class="mean">A well dug in sand gives water as deep as you dig; knowledge flows as much as you learn. When the water is free, the digging is everything.</p></div>
+      <div class="kural"><p class="num">KURAL 69 · மக்கட்பேறு</p><p class="verse">ஈன்ற பொழுதின் பெரிதுவக்கும் தன்மகனைச்<br>சான்றோன் எனக்கேட்ட தாய்.</p><p class="mean">A mother's joy on hearing her child called wise is greater than her joy on the day the child was born. Parents don't want a child with answers; they want a wise child.</p></div>
+      <div class="kural"><p class="num">KURAL 391 · கல்வி</p><p class="verse">கற்க கசடறக் கற்பவை கற்றபின்<br>நிற்க அதற்குத் தக.</p><p class="mean">Learn thoroughly what is worth learning, then live by it.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="big">Not replace. Rethink.</p>
+    <p class="bigta">மாற்றீடு அல்ல; மறுசிந்தனை.</p>
+    <p class="small">From the TEACON 2026 seminar "Generative AI and the Future of Education" by Dr. Venkateshwaran Loganathan, Wisdom Hall, Chennai Trade Centre, 31 October 2026. AI tools change quickly; always check what they produce before it reaches a child or a parent.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // Highlight [placeholders] inside each prompt without touching the copy text.
+  document.querySelectorAll('pre.prompt').forEach(function (pre) {
+    var walker = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT, null);
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (node) {
+      if (!/\[[^\]]+\]/.test(node.nodeValue)) return;
+      var frag = document.createDocumentFragment();
+      var parts = node.nodeValue.split(/(\[[^\]]+\])/);
+      parts.forEach(function (part) {
+        if (/^\[[^\]]+\]$/.test(part)) {
+          var m = document.createElement('mark');
+          m.textContent = part;
+          frag.appendChild(m);
+        } else if (part) {
+          frag.appendChild(document.createTextNode(part));
+        }
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  });
+
+  // Copy buttons.
+  document.querySelectorAll('.card').forEach(function (card) {
+    var btn = card.querySelector('.copy');
+    var pre = card.querySelector('pre.prompt');
+    if (!btn || !pre) return;
+    btn.addEventListener('click', function () {
+      var text = pre.textContent;
+      function done() {
+        btn.textContent = 'Copied';
+        btn.classList.add('done');
+        setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1800);
+      }
+      function fallback() {
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        btn.textContent = 'Selected';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1800);
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, fallback);
+        } else { fallback(); }
+      } catch (e) { fallback(); }
+    });
+  });
+})();
+</script>
+</body></html>
