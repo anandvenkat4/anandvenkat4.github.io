@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beyond Academics: Free Resources for Students</title>
+<meta name="description" content="Free resources to build seven employability skills beyond academics, from Venkat's talk for engineering students.">
+<style>
+:root{
+  --bg:#FAF8F3; --card:#FFFDFA; --line:#E6DED0; --ink:#14213D; --body:#4A5568; --muted:#5F6673;
+  --accent:#B04E14; --accent-bg:#E8833A; --navy:#14213D; --on-navy:#FAF8F3; --on-navy-soft:#C9D3E3; --chip:#F3E7DA;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F182C; --card:#16223A; --line:#2A3A58; --ink:#F2EFE8; --body:#C9D3E3; --muted:#A3B0C4;
+    --accent:#F2A65A; --accent-bg:#E8833A; --navy:#0A1222; --on-navy:#FAF8F3; --on-navy-soft:#C9D3E3; --chip:#24324E;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif}
+a{color:var(--accent)}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+header{background:var(--navy);color:var(--on-navy);padding:48px 0 40px}
+header .eyebrow{color:#F2A65A;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;margin:0 0 12px}
+header h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0 0 14px}
+header p{color:var(--on-navy-soft);margin:0 0 8px;max-width:640px}
+header a{color:#F2A65A}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+nav.toc a{color:var(--on-navy);text-decoration:none;border:1px solid #2E3D5C;border-radius:999px;padding:6px 12px;font-size:14px}
+nav.toc a:hover{border-color:#F2A65A}
+main{padding:32px 0 48px}
+section{margin:0 0 40px}
+h2{font-size:26px;line-height:1.2;margin:0 0 6px}
+h2 .num{color:var(--accent);margin-right:8px}
+.line{color:var(--body);font-style:italic;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+ul.res{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.res li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+ul.res a{font-weight:700;text-decoration:none}
+ul.res a:hover{text-decoration:underline}
+ul.res span{display:block;color:var(--body);font-size:15px}
+.tip{border-left:4px solid var(--accent-bg);padding:8px 0 8px 14px;color:var(--body);margin:14px 0 0}
+/* scorecard */
+.score-row{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.score-row:last-of-type{border-bottom:none}
+.score-row label{font-weight:600}
+.dots{display:flex;gap:6px}
+.dots button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 15px system-ui,sans-serif;cursor:pointer}
+.dots button[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent-bg);color:#14213D}
+#result{margin-top:16px;font-weight:600}
+#result a{font-weight:700}
+.reset{margin-top:10px;background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:14px;padding:0}
+/* challenge */
+.challenge{background:var(--accent-bg);color:#14213D;border-radius:16px;padding:20px}
+.challenge h2{color:#14213D}
+.challenge ol{margin:8px 0 0;padding-left:22px}
+.challenge li{margin:6px 0}
+/* prompts */
+.prompt{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 10px}
+.prompt h3{font-size:16px;margin:0 0 6px}
+.prompt p{margin:0 0 10px;color:var(--body);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;white-space:pre-wrap}
+.copy{background:var(--navy);color:var(--on-navy);border:none;border-radius:8px;padding:6px 12px;font:600 14px system-ui,sans-serif;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:14px}
+@media (max-width:520px){
+  .score-row{grid-template-columns:1fr}
+  .dots button{width:40px;height:40px}
+  th,td{padding:8px 6px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Free resources · Beyond academics</p>
+    <h1>Marks get you shortlisted. Skills get you hired.</h1>
+    <p>Free resources to build the seven employability skills from my talk <em>Developing Employability Skills Beyond Academics</em>. Everything here is free to start.</p>
+    <p>— Venkat, Head of Engineering, ConverSight · <a href="https://www.linkedin.com/in/venkat4/">LinkedIn</a> · <a href="https://anandvenkat4.github.io/">More courses</a></p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#scorecard">Scorecard</a><a href="#challenge">7-day challenge</a><a href="#skill-1">1 Solve</a><a href="#skill-2">2 Build</a><a href="#skill-3">3 AI</a><a href="#skill-4">4 Communicate</a><a href="#skill-5">5 Teamwork</a><a href="#skill-6">6 Ownership</a><a href="#skill-7">7 Keep learning</a><a href="#prompts">AI prompts</a><a href="#placements">Placements</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="scorecard">
+  <h2>Score yourself</h2>
+  <p class="line">Tap a score from 1 (never done this) to 5 (could prove it in an interview tomorrow). Your lowest score is your skill for the next 90 days.</p>
+  <div class="card" id="scores"></div>
+</section>
+
+<section id="challenge" class="challenge">
+  <h2>Your 7-day challenge</h2>
+  <ol>
+    <li><strong>Day 1:</strong> set up or clean up your GitHub and LinkedIn.</li>
+    <li><strong>Every day:</strong> 30 minutes on the skill you circled.</li>
+    <li><strong>By day 7:</strong> write a one-paragraph plan for your first real project, and tell two friends.</li>
+  </ol>
+  <p style="margin:12px 0 0">Shipped something? Tag me on <a href="https://www.linkedin.com/in/venkat4/" style="color:#14213D;font-weight:700">LinkedIn</a>.</p>
+</section>
+
+<section id="skill-1">
+  <h2><span class="num">1</span>Problem solving</h2>
+  <p class="line">“Companies don’t pay you to know answers. They pay you to figure them out.”</p>
+  <ul class="res">
+    <li><a href="https://nptel.ac.in">NPTEL</a><span>Free IIT and IISc courses: DSA, DBMS, OS, networks, and your own core branch.</span></li>
+    <li><a href="https://cs50.harvard.edu/x/">CS50x from Harvard</a><span>The best free introduction to computer science and problem solving.</span></li>
+    <li><a href="https://leetcode.com">LeetCode</a><span>Coding interview practice. Start with Easy problems, one a day.</span></li>
+    <li><a href="https://www.hackerrank.com">HackerRank</a><span>Practice tracks in the style of many campus coding tests.</span></li>
+    <li><a href="https://www.indiabix.com">IndiaBIX</a><span>Aptitude and reasoning practice for placement round one.</span></li>
+  </ul>
+  <p class="tip">After you solve a problem, explain your approach out loud. If you can’t explain it, you got lucky.</p>
+</section>
+
+<section id="skill-2">
+  <h2><span class="num">2</span>Building things that work</h2>
+  <p class="line">“Proof of work beats proof of marks.”</p>
+  <ul class="res">
+    <li><a href="https://education.github.com/pack">GitHub Student Developer Pack</a><span>Free developer tools and credits for students.</span></li>
+    <li><a href="https://learngitbranching.js.org">Learn Git Branching</a><span>Learn Git visually in your browser.</span></li>
+    <li><a href="https://missing.csail.mit.edu">The Missing Semester (MIT)</a><span>The shell, Git, editors and debugging: tools no syllabus teaches.</span></li>
+    <li><a href="https://www.freecodecamp.org">freeCodeCamp</a><span>Free, project-based web development courses.</span></li>
+    <li><a href="https://pages.github.com">GitHub Pages</a><span>Host your project for free and get a live link for your resume.</span></li>
+    <li><a href="https://huggingface.co/spaces">Hugging Face Spaces</a><span>Host an AI demo for free so anyone can try it.</span></li>
+    <li><a href="https://data.gov.in">data.gov.in</a><span>Indian open government data for real, local projects.</span></li>
+    <li><a href="https://www.kaggle.com/datasets">Kaggle Datasets</a><span>Thousands of free datasets, from sensors to crop prices.</span></li>
+  </ul>
+  <div class="card" style="margin-top:14px">
+    <strong>Project ideas from the talk</strong>
+    <table style="margin-top:8px">
+      <tr><th>Branch</th><th>Idea</th></tr>
+      <tr><td>Any</td><td>A Tamil voice assistant that tells farmers in Trichy district today’s market prices</td></tr>
+      <tr><td>Any</td><td>A college bus tracker, or an agent that answers questions from college circulars</td></tr>
+      <tr><td>ECE / EEE</td><td>Detect a failing sensor on a motor or solar panel</td></tr>
+      <tr><td>Mech</td><td>Predict machine failure from vibration data</td></tr>
+      <tr><td>Civil</td><td>Spot cracks in walls from phone photos</td></tr>
+    </table>
+  </div>
+  <p class="tip">A project counts when it has real users (even ten classmates), a live link, a GitHub README and a two-minute demo video.</p>
+</section>
+
+<section id="skill-3">
+  <h2><span class="num">3</span>AI fluency with judgment</h2>
+  <p class="line">“If AI does your thinking, you’ll graduate with a degree and no skill. If AI coaches your thinking, you’ll learn in one year what took me three.”</p>
+  <ul class="res">
+    <li><a href="https://www.elementsofai.com">Elements of AI</a><span>A free, non-technical introduction to AI. Good for every branch.</span></li>
+    <li><a href="https://www.kaggle.com/learn">Kaggle Learn</a><span>Short, hands-on courses: Python, pandas, machine learning.</span></li>
+    <li><a href="https://developers.google.com/machine-learning/crash-course">Google Machine Learning Crash Course</a><span>Machine learning fundamentals with exercises.</span></li>
+    <li><a href="https://course.fast.ai">Practical Deep Learning (fast.ai)</a><span>Build working deep learning models from lesson one.</span></li>
+    <li><a href="https://huggingface.co/learn">Hugging Face Learn</a><span>Free courses on LLMs and AI agents.</span></li>
+    <li><a href="https://www.deeplearning.ai/short-courses/">DeepLearning.AI short courses</a><span>One-to-two-hour courses on building with AI; many are free.</span></li>
+    <li><a href="https://colab.research.google.com">Google Colab</a><span>Free notebooks in the browser, with a GPU. No laptop upgrade needed.</span></li>
+  </ul>
+  <p class="tip">Never submit code you can’t explain line by line.</p>
+</section>
+
+<section id="skill-4">
+  <h2><span class="num">4</span>Communication: speak, write, listen</h2>
+  <p class="line">“Your idea is only as good as your ability to explain it.”</p>
+  <ul class="res">
+    <li><a href="https://www.bbc.co.uk/learningenglish">BBC Learning English</a><span>Free lessons for everyday and workplace English.</span></li>
+    <li><a href="https://developers.google.com/tech-writing">Google Technical Writing</a><span>Free courses on writing clearly as an engineer.</span></li>
+    <li><a href="https://www.ted.com/talks">TED Talks</a><span>Watch how good speakers structure a story, then try it with your project.</span></li>
+  </ul>
+  <p class="tip">Record yourself explaining your best project in two minutes on your phone. Watch it back. Repeat until a non-engineer would follow it. Your accent doesn’t matter; clarity does.</p>
+</section>
+
+<section id="skill-5">
+  <h2><span class="num">5</span>Teamwork</h2>
+  <p class="line">“Nobody ships software alone.”</p>
+  <ul class="res">
+    <li><a href="https://github.com/firstcontributions/first-contributions">First Contributions</a><span>Make your first open-source pull request, step by step.</span></li>
+    <li><a href="https://goodfirstissue.dev">Good First Issue</a><span>Beginner-friendly issues in real open-source projects.</span></li>
+    <li><a href="https://summerofcode.withgoogle.com">Google Summer of Code</a><span>Paid open-source work with a mentor over the summer.</span></li>
+    <li><a href="https://sih.gov.in">Smart India Hackathon</a><span>The national student hackathon. Check for the current edition.</span></li>
+    <li><a href="https://devfolio.co">Devfolio</a><span>Hackathons across India, many open to student teams.</span></li>
+  </ul>
+  <p class="tip">Form a squad of three or four friends. Meet for one hour every week to build something together.</p>
+</section>
+
+<section id="skill-6">
+  <h2><span class="num">6</span>Ownership and professionalism</h2>
+  <p class="line">“‘That’s not my module’ is a career-limiting sentence.”</p>
+  <ul class="res">
+    <li><a href="https://stackoverflow.com/help/how-to-ask">How to ask a good question</a><span>Stack Overflow’s guide. The same rules work with your seniors at work.</span></li>
+  </ul>
+  <div class="card" style="margin-top:14px">
+    <strong>Habits to practise in college</strong>
+    <ul style="margin:8px 0 0;padding-left:20px;color:var(--body)">
+      <li>Take charge of something real: a club role, an event, a lab setup.</li>
+      <li>The 30-minute rule: try alone for 30 minutes, then ask, saying what you tried.</li>
+      <li>Meet every deadline you set. If you’ll miss one, say so early.</li>
+      <li>Never say “almost done” when you haven’t started.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="skill-7">
+  <h2><span class="num">7</span>Learning agility and resilience</h2>
+  <p class="line">“The most important skill isn’t Python or prompting. It’s learning how to learn.”</p>
+  <ul class="res">
+    <li><a href="https://swayam.gov.in">SWAYAM</a><span>Government of India’s free online courses, many with credit transfer.</span></li>
+    <li><a href="https://roadmap.sh">roadmap.sh</a><span>Step-by-step learning roadmaps for developer roles.</span></li>
+    <li><a href="https://learn.microsoft.com/training/">Microsoft Learn</a><span>Free learning paths for cloud, AI and data.</span></li>
+    <li><a href="https://skillbuilder.aws">AWS Skill Builder</a><span>Hundreds of free cloud courses.</span></li>
+  </ul>
+  <p class="tip">Please don’t pay ₹50,000 for a certificate that a free course teaches better. Treat every rejection as data: write down what they asked and what you’ll fix.</p>
+</section>
+
+<section id="prompts">
+  <h2>AI prompts to copy</h2>
+  <p class="line">Use AI as a tutor, not a ghostwriter.</p>
+  <div class="prompt"><h3>Tutor</h3><p>Explain [topic] using a Tamil movie example. Then give me three practice problems. Don’t give me the answers.</p><button class="copy" type="button">Copy</button></div>
+  <div class="prompt"><h3>Mock interviewer</h3><p>Act as an interviewer for a fresher software role. Ask me one question at a time and give me feedback after each answer.</p><button class="copy" type="button">Copy</button></div>
+  <div class="prompt"><h3>Code reviewer</h3><p>Review this code like a senior engineer. List the bugs and explain each one. Don’t rewrite it for me.</p><button class="copy" type="button">Copy</button></div>
+  <div class="prompt"><h3>Pitch coach</h3><p>Here is my project in five lines. Ask me questions first, then help me turn it into a two-minute explanation a non-engineer can follow.</p><button class="copy" type="button">Copy</button></div>
+</section>
+
+<section id="placements">
+  <h2>Placements and internships</h2>
+  <p class="line">Every placement round tests the seven skills under a different name.</p>
+  <div class="card">
+    <table>
+      <tr><th>Round</th><th>What it really tests</th><th>What to expect</th></tr>
+      <tr><td>Aptitude and coding</td><td>Problem solving</td><td>Practise daily. Don’t skip aptitude.</td></tr>
+      <tr><td>Technical interview</td><td>Building, fundamentals, AI judgment</td><td>“Walk me through your project.”</td></tr>
+      <tr><td>Group discussion</td><td>Communication, teamwork</td><td>Speak early. Make one clear point.</td></tr>
+      <tr><td>HR round</td><td>Ownership, learning</td><td>“Tell me about a failure.”</td></tr>
+    </table>
+  </div>
+  <ul class="res" style="margin-top:14px">
+    <li><a href="https://internshala.com">Internshala</a><span>Internships for Indian students, including remote ones.</span></li>
+    <li><a href="https://wellfound.com">Wellfound</a><span>Jobs and internships at startups.</span></li>
+    <li><a href="https://www.linkedin.com/jobs">LinkedIn Jobs</a><span>Search off-campus roles, and follow the companies you want.</span></li>
+  </ul>
+  <p class="tip">Prepare three stories before any interview: a challenge you solved, a failure you learned from, and a time your team won.</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>கற்றது கைம்மண் அளவு, கல்லாதது உலகளவு — Avvaiyar. What we’ve learned is a handful of sand; what we haven’t is the size of the world.</p>
+    <p>Links are to third-party sites; all were free to start when this list was made (November 2026).</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var skills=[
+    {id:'skill-1',name:'Problem solving'},
+    {id:'skill-2',name:'Building things that work'},
+    {id:'skill-3',name:'AI with judgment'},
+    {id:'skill-4',name:'Communication'},
+    {id:'skill-5',name:'Teamwork'},
+    {id:'skill-6',name:'Ownership'},
+    {id:'skill-7',name:'Keep learning'}
+  ];
+  var KEY='beyond-academics-scores';
+  var scores={};
+  try{ scores=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ scores={}; }
+  var box=document.getElementById('scores');
+  skills.forEach(function(s,i){
+    var row=document.createElement('div'); row.className='score-row';
+    var lab=document.createElement('label'); lab.textContent=(i+1)+'. '+s.name; lab.id='lab-'+s.id;
+    var dots=document.createElement('div'); dots.className='dots'; dots.setAttribute('role','group'); dots.setAttribute('aria-labelledby',lab.id);
+    for(var v=1;v<=5;v++){
+      var b=document.createElement('button'); b.type='button'; b.textContent=v; b.dataset.skill=s.id; b.dataset.v=v;
+      b.setAttribute('aria-pressed', scores[s.id]==v ? 'true':'false');
+      b.setAttribute('aria-label', s.name+': '+v+' out of 5');
+      dots.appendChild(b);
+    }
+    row.appendChild(lab); row.appendChild(dots); box.appendChild(row);
+  });
+  var result=document.createElement('p'); result.id='result'; result.setAttribute('aria-live','polite'); box.appendChild(result);
+  var reset=document.createElement('button'); reset.type='button'; reset.className='reset'; reset.textContent='Clear my scores'; box.appendChild(reset);
+  function render(){
+    var done=skills.filter(function(s){return scores[s.id];});
+    if(done.length<skills.length){ result.textContent='Scored '+done.length+' of 7.'; return; }
+    var total=0, low=null;
+    skills.forEach(function(s){ total+=+scores[s.id]; if(!low||+scores[s.id]<+scores[low.id]) low=s; });
+    result.innerHTML='Total: '+total+' / 35. Your focus for the next 90 days: <a href="#'+low.id+'">'+low.name+'</a>.';
+  }
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-skill]'); if(!b) return;
+    scores[b.dataset.skill]=+b.dataset.v;
+    b.parentNode.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', x===b ? 'true':'false'); });
+    try{ localStorage.setItem(KEY, JSON.stringify(scores)); }catch(e){}
+    render();
+  });
+  reset.addEventListener('click',function(){
+    scores={}; try{ localStorage.removeItem(KEY); }catch(e){}
+    box.querySelectorAll('button[data-skill]').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+    render();
+  });
+  render();
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var text=btn.parentNode.querySelector('p').textContent;
+      var done=function(){ btn.textContent='Copied'; setTimeout(function(){ btn.textContent='Copy'; },1500); };
+      if(navigator.clipboard){ navigator.clipboard.writeText(text).then(done,function(){}); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
